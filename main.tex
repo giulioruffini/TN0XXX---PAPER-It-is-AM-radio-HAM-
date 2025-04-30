@@ -1,0 +1,1114 @@
+\documentclass[11pt]{article}
+
+% Basic packages
+\usepackage{amsmath}    % For math environments
+\usepackage{graphicx}   % For images
+\usepackage{hyperref}   % For hyperlinks
+\usepackage[superscript]{cite}
+\usepackage{tcolorbox}
+\usepackage{parskip}
+\usepackage{amsfonts}
+\usepackage{tikz}
+\usetikzlibrary{calc}  % <-- IMPORTANT for coordinate arithmetic
+
+\usetikzlibrary{decorations.pathmorphing,arrows.meta}
+\usepackage{feynmp-auto}
+% Extra formatting packages
+\usepackage{geometry}   % For setting page margins
+\usepackage{fancyhdr}   % For customizing headers and footers
+\usepackage{titlesec}   % For customizing section titles
+\usepackage{setspace}   % For adjusting line spacing
+\usepackage{lmodern}    % For modern font
+\usepackage{xcolor}     % For color customization
+
+% Set up page margins
+\geometry{
+    a4paper,
+    left=1in,
+    right=1in,
+    top=1in,
+    bottom=1in
+}
+
+% Set up line spacing
+\onehalfspacing
+
+% Customize section titles
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection}{1em}{}
+
+% Set up headers and footers
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}  % Left-aligned section title
+\fancyhead[R]{\thepage}   % Right-aligned page number
+\fancyfoot[C]{\textit{}}  % Centered footer with your name
+
+% Customize hyperlink colors
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=magenta,
+    pdftitle={NE TN0XXX},    % PDF document title
+    pdfauthor={G. Ruffini},             % PDF document author
+}
+
+\title{Neural Encoding through Hiearchical Amplitude Modulation (HAM): a Laminar Neural Mass model implementation (``it is AM radio")\\
+NE TN0XXX}
+\author{G. Ruffini Ruffini\thanks{giulio.ruffini@neuroelectrics.com},   
+Edmundo Lopez-Sola and Francesca Castaldo}
+
+%\newcommand{\Comparator}{$\lceil \Delta \rceil$}
+\usepackage{xspace}
+\newcommand{\Comparator}{$\nu$\xspace}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\maketitle
+\begin{abstract}
+
+Predictive coding frameworks, which propose that neural computations rely on hierarchical error minimization, where incoming sensory signals are compared against internal model predictions, require a hierarchical information encoding scheme. Here, we introduce Hierarchical Amplitude Modulation (HAM) information encoding as a mechanism for predictive processing, and implement within the Laminar Neural Mass Model (LaNMM) that integrates infragranular Jansen–Rit (JR) and supragranular Pyramidal-Interneuronal Network Gamma (PING) subpopulations. HAM describes a nested encoding scheme in which oscillatory signals and their amplitude envelopes iteratively modulate each other across multiple timescales, enabling a dynamic interplay between signal representation and demodulation.
+Crucially, LaNMM implements modulation and demodulation schemes that allow oscillatory signals to be dynamically encoded as amplitude envelopes and subsequently reconstructed through filtering and nonlinear interactions. Notably, this enables a principled account of the logarithmic spacing of neural oscillations and their role in multiscale information processing.
+\end{abstract}
+
+ 
+
+%%%%%%%%%%%%%%%
+\clearpage
+\tableofcontents
+
+\clearpage
+\textbf{\large Highlights}
+ 
+    \begin{itemize}
+
+       \item We propose an information encoding scheme called Hierarchical Amplitude Modulation (HAM) in oscillatory networks, where information is stored in signals or their envelopes. Envelopes become signals through demodulation, and information is again encoded as slower timescale envelopes.
+
+    \item We show that HAM explains the logarithmic spacing of oscillatory frequencies.
+
+ 
+       
+   
+\end{itemize}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+
+
+
+\section{Introduction}
+
+\subsection{Background and Motivation}
+Predictive coding has emerged as a central framework for understanding neural processing, positing that the brain continuously generates predictions about incoming sensory data and updates these predictions by minimizing prediction errors \cite{raoPredictiveCodingVisual1999,fristonPredictiveCodingFreeenergy2009}. In active inference (AIF), this hierarchical exchange of top-down predictions and bottom-up errors minimizes free energy \cite{fristonFreeEnergyPrinciple2006,parr2022active}. Kolmogorov Theory (KT) naturally embeds this framework within Algorithmic Information Theory, suggesting that both biological brains and digital agents optimize predictions by constructing short, efficient models of the world \cite{ruffiniInformationComplexityBrains2007, ruffiniRealitySimplicity2009, ruffiniModelsNetworksAlgorithmic2016,Ruffini2017-zv, ruffiniAITFoundationsStructured2022,ruffiniAlgorithmicAgentPerspective2024,ruffiniStructuredDynamicsAlgorithmic2025}. Although the analog computational brain appears distinct from digital algorithmic agents, both systems fundamentally rely on encoding information to compute prediction errors and update internal representations.
+
+Neural coding schemes have long been debated, with proposals ranging from rate coding (where information is carried by average firing rates) to various temporal strategies—including spike timing, synchrony, phase coding, and burst coding—to capture the richness of neural information \cite{zeldenrustNeuralCodingBurstsCurrent2018, carianiTimeEssenceNeural2022, lismanThetaGammaNeuralCode2013} (see Appendix~\ref{sec:hierachical}). In this context, it is increasingly clear that information is encoded not only in the raw oscillatory signals but also in their amplitude envelopes. This dual coding strategy is reminiscent of amplitude modulation (AM) in radio communications, where a high-frequency carrier encodes information via its modulated envelope.
+
+\subsection{Oscillations, Cross-Frequency Coupling (CFC), and Hierarchical Encoding}
+Oscillatory activity in the brain plays a key role in organizing and transmitting information. Gamma oscillations (30–100 Hz) have been implicated in local information processing, feature binding, and communication through coherence \cite{buzsakiMechanismsGammaOscillations2012, jensenHumanGammafrequencyOscillations2007, friesNeuronalGammabandSynchronization2009, singerVisualFeatureIntegration1995}, while slower rhythms (theta 4–8 Hz and alpha 8–12 Hz) are associated with attentional gating and top-down signaling \cite{buzsakiRhythmsBrain2006, klimeschEEGAlphaOscillations2007, hanslmayrRoleOscillationsTemporal2011}. Phase-amplitude coupling (PAC) provides a mechanistic bridge between these scales, with slower oscillatory phases modulating the amplitude of faster activity \cite{canoltyFunctionalRoleCrossfrequency2010, lismanThetaGammaNeuralCode2013, scheffer-teixeiraCrossfrequencyPhasephaseCoupling2016, giraudCorticalOscillationsSpeech2012}. Empirical studies using EEG, MEG, and ECoG have demonstrated that both the filtered signal and its amplitude envelope can carry stimulus-specific information \cite{dingNeuralCodingContinuous2012, osullivanAttentionalSelectionCocktail2015, mesgaraniSelectiveCorticalRepresentation2012, golumbicMechanismsUnderlyingSelective2013, viswanathanElectroencephalographicSignaturesNeural2019}. Such findings suggest that neural information processing is inherently multiscale, with nested oscillatory hierarchies that multiplex information much like modern communication systems.
+ Gamma oscillations, in particular, serve as carriers of sensory information, while slower rhythms modulate these carriers via cross-frequency coupling. Importantly, oscillatory bands—such as delta, theta, alpha, beta, and gamma—exhibit a geometric progression with a common ratio of approximately $r\approx1/3$ (see Figure~\ref{fig:logarithmic_hierarchy}). That is, the center frequencies increase by a constant multiplier, or equivalently, they are evenly spaced when plotted on a logarithmic scale \cite{penttonenNaturalLogarithmicRelationship2003}. % As we will see, this logarithmic organization naturally supports hierarchical amplitude modulation (HAM), wherein nested envelopes at different timescales encode information in a manner that mirrors the brain’s multiscale predictive coding architecture.
+
+
+\subsection{Hierarchical Amplitude Modulation and the LaNMM Framework}
+Motivated by these observations, we propose a \textit{hierarchical amplitude modulation} (HAM) framework for neural information encoding. In HAM, information is represented in a layered fashion: the raw oscillatory signal (the carrier), its amplitude envelope, and recursively, the envelope of that envelope. This hierarchical structure is analogous to the progression from low-level machine language to higher-level abstract programming in digital systems. To investigate this framework, we employ the Laminar Neural Mass Model (LaNMM) \cite{sanchez-todo_physical_2023}, which simulates depth-resolved electrophysiology by capturing the interaction between superficial fast and deeper slow oscillations, including mechanisms such as phase-amplitude coupling and amplitude-amplitude anticorrelation. LaNMM  provides a practical platform to instantiate modulation and demodulation as well as the neural function for error evaluation—central to predictive coding—by comparing modulated signals across cortical layers \cite{Ruffini2025Comparator}.
+
+
+\begin{figure} [t]
+    \centering
+    \includegraphics[width=1\linewidth]{figures/logarithmic_hierarchy.png}
+    \caption{Logarithmic hierarchy, adapted from Penttonen and Buzsaki 2003.
+Oscillation bands, with their commonly used names, exhibit a geometric progression with $r\approx 1/3$. This means their frequencies increase by a constant factor or multiplier. Alternatively, this progression can be viewed as an arithmetic progression when the frequencies are plotted on a logarithmic scale\cite {penttonenNaturalLogarithmicRelationship2003}. }
+    \label{fig:logarithmic_hierarchy}
+\end{figure}
+
+Furthermore, the nested AM approach naturally gives rise to a coarse-grained, multiscale representation of information. As each successive envelope captures fluctuations at a slower timescale, the system exhibits a logarithmic frequency spacing—a phenomenon that aligns with the observed geometric progression of brain rhythms \cite{penttonenNaturalLogarithmicRelationship2003,buzsakiScalingBrainSize2013} (see Figure~\ref{fig:logarithmic_hierarchy}).
+
+\subsection{Overview of the Proposed Information Model}
+In summary, we propose an information model in which neural signals, their amplitude envelopes, and the envelopes of these envelopes encode prediction errors and top-down expectations within a hierarchical framework. In this model, LaNMM acts as a modulator-demodulator, systematically extracting and comparing envelopes across cortical layers to implement the Comparator function inherent in predictive coding. This HAM framework not only facilitates efficient information transmission and integration across multiple temporal scales but also leads to a natural logarithmic organization of frequency bands.
+
+In the following sections, we present the mathematical formulation of the HAM model and its implementation through modulation-demodulation in LaNMM, and demonstrate how it accounts for the observed logarithmic spacing of oscillatory bands.
+ 
+ 
+
+
+
+\section{Hierarchical amplitude modulation}
+
+
+  AM radio operates by encoding information in the amplitude of a high-frequency carrier wave. In this context, “information” typically refers to the audio signal we want to transmit, such as music or voice. This information is represented as a low-frequency signal, which modulates or varies the amplitude of the high-frequency carrier wave. The carrier itself oscillates at a frequency much higher than the signal, enabling it to be transmitted over long distances efficiently.
+During modulation, the carrier’s amplitude is adjusted to follow the waveform of the audio signal, embedding the desired information within the carrier’s envelope. When received, this combined signal undergoes demodulation to extract the original audio information from the carrier. Demodulation detects variations in amplitude and reconstructs the original low-frequency signal. This process highlights how AM radio relies on distinct components: a steady carrier, the modulating information signal, and demodulation to recover the original information for playback. 
+The \textit{carrier signal} \( C(t) \) can be expressed as $
+C(t) = A_c \cos(2 \pi f_c t)
+$, 
+where \( A_c \) is the amplitude of the carrier, and \( f_c \) is the carrier frequency.
+    To encode the information, the amplitude of the carrier is varied according to the lower-frequency \textit{information signal} \( m(t) \), producing the \textit{modulated signal }\( S(t) \),
+    \begin{equation}\label{eq:am_model}
+    S(t) = A_c\,\bigl[\,1 + a\,m(t)\bigr]\cos\bigl(2\pi f_c t\bigr), 
+    \end{equation}
+    where \( a\, m(t) \) is scaled such that \( 1 + a\, m(t) \) remains positive, ensuring no distortion occurs during modulation.
+    Here, $A_c$ is the carrier amplitude,
+       $a$ is the \emph{modulation index},
+       $m(t)$ is the baseband (modulating) signal with frequency content up to $f_m \ll f_c$, and 
+       $f_c$ is the carrier frequency.
+This generic model subsumes both single-tone AM (where $m(t)=\cos(2\pi f_m t)$) and multi-tone/wideband modulations, as long as the maximum modulating frequency is less than $f_c$.
+At the receiver, a \textit{demodulation} process retrieves the original information signal \( m(t) \) by detecting variations in the amplitude (or envelope) of \( S(t) \).
+% \end{tcolorbox}
+% }
+%\end{figure}
+
+
+ 
+While standard AM encoding relies on a single layer of modulation, where the information signal \( m(t) \) modulates the amplitude of a high-frequency carrier, this concept can be extended to a \textit{hierarchical framework in which multiple layers of modulation occur at different timescales.} In this extended model, each modulating signal not only modifies the carrier but also modulates the envelope of another modulating signal at a slower timescale, forming a cascade of amplitude modulations across hierarchical frequency bands.
+
+
+ 
+Each hierarchical layer contributes additional information at progressively longer timescales, with the fastest dynamics encoded in the carrier-modulated signal, intermediate-scale dynamics encoded in the envelope of the envelope, and slowest dynamics encoded in higher-order envelopes. This nested structure allows for efficient multiplexing of information across different frequency bands.
+
+% \begin{figure}[t]
+%     \centering
+%     \includegraphics[width=0.9\linewidth]{figures/multiscale.png}
+%      \includegraphics[width=0.9\linewidth]{figures/multiscale_spectrum.png}
+     
+%     \caption{\textbf{Top}: Multiscale information encoding in envelopes: A 6-second multiscale signal demonstrating nested modulation. A 1 Hz (low-frequency) wave modulates a 4 Hz alpha wave, which in turn shapes the amplitude of a 60 Hz gamma carrier. 
+% \textbf{Bottom}: Spectrum of the different signals.}
+%     \label{fig:multiscale}
+%     % https://colab.research.google.com/drive/1XSmrR51GdENpHDsh4ujWh7NFp4po9NwC#scrollTo=1BvF40dxEH5V
+% % https://colab.research.google.com/drive/1XSmrR51GdENpHDsh4ujWh7NFp4po9NwC#scrollTo=C6bsJCKekZ9O
+%  \end{figure}
+ 
+ 
+Similarly, HAM signals can be demodulated in a sequential manner. At the receiver, an initial envelope detector extracts the outermost modulation layer, revealing the slowly varying modulating signal. Subsequent demodulation steps recover the progressively faster modulation components by applying envelope detection at each hierarchical stage. This structured decomposition ensures that each information signal can be separately decoded, provided that the modulation frequencies are sufficiently distinct to avoid spectral overlap.
+
+The hierarchical encoding framework extends the classical AM model and provides a mechanism for representing multi-scale information structures. While not typically implemented in conventional radio systems, the concept bears similarities to cross-frequency coupling in neural signals, where fast oscillations are modulated by slower rhythms in a nested hierarchy of information processing.
+
+
+
+Penttonen and Buzsáki (2003) and others \cite{penttonenNaturalLogarithmicRelationship2003,buzsakiNeuronalOscillationsCortical2004} report that behaviorally relevant brain oscillations exhibit a structured relationship that facilitates coordinated activity across neuronal networks of varying sizes and connectivity. They found that the center frequencies and frequency ranges of oscillatory bands—from ultra-slow to ultra-fast—form an arithmetic progression when plotted on a natural logarithmic scale. Due to the mathematical properties of the logarithm, the corresponding cycle lengths (the inverses of frequency) also form an arithmetic progression after logarithmic transformation. In practical terms, slower oscillations, with longer periods, provide a broad temporal window and allow integration over larger spatial extents with more variable synaptic delays, whereas faster oscillations offer more precise, spatially limited representations of information. This log-spaced organization is hypothesized to help overcome the processing limitations imposed by synaptic delays.
+
+As we show below, a hierarchical encoding scheme based on amplitude modulation offers a natural explanation for this phenomenon. In standard amplitude modulation (AM), a high-frequency carrier is modulated by a lower-frequency information signal. Extending this idea hierarchically, one can envision a cascade of modulations: a fast modulating signal is first embedded within a carrier, and then a slower modulating signal is imposed on the envelope of that signal, with even slower modulations nested in successive envelopes. This approach naturally yields a series of frequency bands that are spaced geometrically in the linear domain or equivalently in an arithmetic progression on the logarithmic scale. 
+
+Such a logarithmic (or geometric) progression is advantageous because it preserves a constant quality factor (Q-factor) across the bands, meaning that the ratio of bandwidth to center frequency remains constant. This feature not only prevents spectral overlap between different modulation layers but also aligns with the observed organization of brain rhythms. As one moves upward in the frequency spectrum, the absolute bandwidth increases, allowing for finer temporal details to be encoded in higher-frequency bands, while slower modulations, with relatively narrower absolute bandwidths, capture longer timescale integrative processes. In this way, hierarchical amplitude modulation provides a scalable framework that is consistent with both engineered communication systems and neural cross-frequency coupling, thereby offering insight into how the brain might multiplex information across multiple temporal scales.
+
+In Figure~\ref{fig:multiscale}, the top two panels illustrate a slow and a fast modulator envelope, respectively, and the third panel shows how these combine into a composite envelope that modulates the final carrier signal (fourth panel). Visually, one can see that each subsequent (slower) envelope “rides” on the amplitude already modulated by the faster envelope, so the available “room” in frequency space diminishes proportionally at each step. The spectrum (bottom panel) confirms that new sidebands form around the previous layer’s spectral lines, indicating that to avoid overlap, slower modulating frequencies must occupy smaller fractional gaps—hence a natural move toward logarithmic or geometric spacing across layers.
+
+
+\subsection{HAM and logarithmic spacing of modulating bands}
+\label{sec:hierarchical_am}
+
+Hierarchical Amplitude Modulation (HAM) refers to a nested modulation scheme in which a high-frequency carrier is amplitude-modulated by a signal, whose amplitude in turn is modulated by another slower signal, and so on across multiple layers. In essence, information is encoded at multiple hierarchical levels of the amplitude envelope. We describe this concept step by step, analyze the resulting spectra at each stage, and show why a logarithmic (geometric) spacing of carrier and modulation frequencies naturally emerges to prevent spectral overlap, as observed in electrophysiological signals \cite{penttonenNaturalLogarithmicRelationship2003,buzsakiNeuronalOscillationsCortical2004} (see Figure~\ref{fig:logarithmic_hierarchy}). Finally, we discuss general insights into how such a structure can be demodulated and generalized.
+
+
+ 
+
+ 
+
+  
+    Consider a carrier signal with frequency $f_c$ and amplitude $A_c$. The simplest form of amplitude modulation applies a single cosine wave modulator at frequency $f_1 =f_c$, 
+    \[
+       s_1(t) = A_c \bigl[ 1 + m_1 \cos(2\pi f_1 t + \phi_1) \bigr].
+    \]
+    
+     
+    Now, we introduce a second modulating signal at frequency $f_2<f_1$, leading to
+    \[
+       s_2(t) = s_1(t) \bigl[ 1 + m_2 \cos(2\pi f_2 t + \phi_2) \bigr].
+    \]
+    Expanding step by step,
+    \begin{equation}
+    \begin{split}
+    s_2(t) = A_c \bigl[ 1 + m_1 \cos(2\pi f_1 t + \phi_1) \bigr] \bigl[ 1 + m_2 \cos(2\pi f_2 t + \phi_2) \bigr].
+    \end{split}
+    \end{equation}
+    Using the trigonometric identity $\cos A \cos B = \frac{1}{2} [\cos(A+B) + \cos(A-B)]$, this introduces additional sidebands at:
+    \[
+       f_1, \quad f_2, \quad f_1 \pm f_2.
+    \]
+    
+    
+    Repeating this process with additional modulation layers at frequencies $f_3, f_4, \dots$, we arrive at the general hierarchical AM structure,
+    \begin{equation}
+        s_j(t) = s_{j-1}(t) \bigl[ 1 + m_j \cos(2\pi f_j t + \phi_j) \bigr],
+    \end{equation}
+    where
+    \begin{equation}
+        s_1(t) = A_c \bigl[ 1 + m_1 \cos(2\pi f_1 t + \phi_1) \bigr].
+    \end{equation}
+    Expanding fully, we obtain
+    \begin{equation}
+        s_N(t) = A_c \prod_{i=1}^{N} \Big[ 1 + m_i \cos(2\pi f_i t + \phi_i) \Big].
+        \label{eq:ham_general}
+    \end{equation}
+    The spectrum of this signal includes all integer sum and difference combinations of the modulation frequencies:
+    \begin{equation}
+        f = \sum_{i=1}^{N} a_i f_i, \quad a_i \in \{-1, 0, 1\}.
+        \label{eq:ham_freqs}
+    \end{equation}
+    This exponential increase in spectral components follows naturally from the nested product structure, emphasizing the need for logarithmic frequency spacing to prevent spectral overlap.
+ 
+
+
+
+ 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{figures/ham_signals.png}
+    \includegraphics[width=0.95\linewidth]{figures/ham_spectrum.png}
+    \caption{HAM example: A high-frequency carrier is successively modulated by slower oscillations in a nested multiplicative structure. Each subplot presents a key stage in the formation of the hierarchical signal:
+	1.	Envelope Modulations (First $N$ Subplots): Each line represents an envelope function of the form  $1 + m_i \cos(2\pi f_i t + \phi_i) $ , where each modulation frequency  $f_i$  is progressively lower. These envelopes modulate all previously applied layers, creating an intricate structure of amplitude variations at multiple timescales.
+	2.	Final Hierarchical AM Signal: The resulting signal after applying all modulation layers. This waveform is the product of all envelope layers modulating a carrier, generating a complex multi-scale amplitude variation.
+	3.	The resulting signal after applying all modulation layers. This waveform is the product of all envelope layers modulating a carrier, generating a complex multi-scale amplitude variation. The signal is filtered Signal Around the highest carrier frequency (125 Hz). This highlights how the original high-frequency carrier retains structured amplitude variations due to the hierarchical modulation. The final plot displays the spectrum of the full signal, 
+The hierarchical nature of modulation creates a combinatorial spectral expansion, where all integer combinations of modulating frequencies contribute to the final spectrum. This structure necessitates logarithmic spacing of modulation frequencies to prevent spectral overlap and ensure clear separation of modulation layers. The figure also shows a logarithmic decay in power, which stems from the successive product of $m_i$ factors in each band.}
+    \label{fig:ham_example}
+\end{figure}
+
+
+ 
+
+This structure results in nested envelopes that impose amplitude fluctuations at different timescales. As seen in the generated hierarchical modulation plots, a low-frequency modulator introduces a broad envelope variation, a higher-frequency modulator superimposes faster oscillations within that envelope, and so forth. The final signal thus encapsulates a multi-timescale structure where rapid oscillations are embedded within progressively slower amplitude modulations.
+
+The spectral content of HAM is determined by the multiplicative interaction of oscillatory components. Each new modulating term $[1 + m_i \cos(2\pi f_i t + \phi_i)]$ introduces sum and difference frequencies for every existing spectral component. If an initial carrier $f_c$ is modulated by $f_1$, the resulting spectrum contains $f_c \pm f_1$. Adding another modulator at $f_2$ produces sidebands at $f_c \pm f_1 \pm f_2$. In general, an $N$-layer hierarchical modulation results in a spectral expansion containing  all possible linear combinations, 
+\begin{equation}
+    f_c \pm f_1 \pm f_2 \pm \dots \pm f_N.
+    \label{eq:ham_freqs}
+\end{equation}
+Furthermore, all associated spectral contributions can potentially be found in system signals  from linear or non-linear superposition, producing a rich spectrum (see Figure~\ref{fig:ham_example}).
+
+This leads to an exponential growth of spectral components as additional layers are introduced. If all modulation indices are small ($m_i \ll 1$), higher-order terms in the expansion will have progressively weaker amplitudes, but the sheer number of components increases combinatorial
+
+\subsubsection*{Full Spectral Expansion}
+HAM applies multiple layers of amplitude modulation in a nested, multiplicative manner. Given a carrier frequency $f_c$ modulated by signals at frequencies $f_1, f_2, \dots, f_N$, the resulting spectrum includes a combinatorial set of frequency components. Specifically, the spectral content is given by:
+
+\begin{equation}
+    f = f_c + \sum_{i=1}^{N} a_i f_i, \quad a_i \in \{-1, 0, 1\}.
+    \label{eq:ham_freqs}
+\end{equation}
+
+This means the output spectrum contains every possible sum and difference combination of the modulation frequencies $f_i$. Unlike single-layer AM, where modulation produces only first-order sidebands $f_c \pm f_1$, the hierarchical nature of HAM results in an **exponential proliferation** of spectral components. At depth $N$, the number of distinct frequency terms can grow as $2^N$. Because the signal is real-valued, only positive frequencies are physically distinct; negative frequencies correspond to mirrored spectral components.
+
+The generated plots of hierarchical modulation illustrate how each new layer of modulation introduces slower fluctuations in the amplitude envelope. The fastest modulated component oscillates at high frequencies, while slower oscillations modulate its amplitude, creating an envelope structure that is observable across multiple time scales.
+
+
+
+
+
+
+\subsubsection*{Sideband Structure and Logarithmic Spacing}
+\label{sec:hierarchical_am}
+
+
+ 
+From the expansions above, it is clear that ensuring no unwanted overlaps among the $2^N$ frequencies in \eqref{eq:ham_freqs} requires careful spacing of $\{f_k\}$. Overlap occurs if two distinct sign combinations yield the same sum, which can happen if one frequency is an integer combination of others. A practical way to avoid such degeneracies is to choose each $f_{k+1}$ significantly smaller than $f_{k}$ (plus any lower frequencies), so that any new sidebands sit well clear of the existing clusters. In the limit of many layers, this condition is met naturally by a geometric (logarithmic) progression:
+\[
+   f_k \;=\; \frac{f_c}{r^k}, 
+\]
+where $r>1$ is a constant ratio. Such logarithmic spacing implies a constant fractional (or constant-$Q$) bandwidth per layer. Consequently, each layer’s sidebands remain well-separated in a self-similar (fractal-like) arrangement on a log-frequency axis.
+
+
+
+
+\paragraph{Derivation of logarithmic spacing:}
+If each layer’s center frequency is a fixed fraction of the previous, then the total bandwidth needed at layer $k$ is likewise a fraction of $f_k$. This constant-$Q$ design simplifies both transmitter and receiver structures: each layer can be modulated/demodulated with essentially the same filter shape, scaled in frequency. Linear spacing (equal frequency gaps) would cause high-frequency layers to crowd together, whereas geometric spacing preserves a consistent margin in proportional terms. Indeed, many natural and engineered systems (e.g.\ human audition, wavelet filter banks) employ such log-spaced filters to analyze or encode signals across multiple scales without overlap.
+
+
+The spectrum consists of a self-similar hierarchy of sidebands: the highest-frequency carrier $f_c$ has ``primary'' sidebands at $f_c \pm f_1$; each of those in turn has ``secondary'' sidebands at offsets of $\pm f_2$; those have tertiary sidebands at $\pm f_3$, and so on. The amplitude of a given spectral line is proportional to the product of the modulation indices of the layers involved in its formation. For example, a component like $f_c + f_1 - f_2 - f_3$ would have an amplitude 
+\[
+\sim \tfrac{A_c\,m_1\,m_2\,m_3}{2^3}
+\]
+(assuming small $m_i$ so that higher-order products are weak). Thus, deeper layer sidebands (involving more $\pm f_k$ terms) tend to be weaker, which justifies keeping modulation indices $m_k$ reasonably small to preserve a clear spectral hierarchy and avoid unintentionally strong high-order products.
+
+\paragraph{Formal spectral analysis and sideband placement:}
+The above derivation qualitatively shows how hierarchical AM generates a comb of frequencies given by Eq.\,\eqref{eq:ham_freqs}. We now analyze the conditions for these sidebands to remain non-overlapping and distinct at each layer. In general, the $2^N$ frequencies of the form $f_c \pm f_1 \pm \cdots \pm f_N$ will all be distinct if and only if none of these combinations coincide in value. Overlap would occur if two different sign combinations in \eqref{eq:hierarchical_freqs} yield the same sum. This can only happen if the modulation frequencies $\{f_k\}$ satisfy certain linear relations (e.g.\ one frequency being an integer combination of others). For example, in the two-layer case we saw that if $f_2$ were equal to $f_1$, then one of the second-layer sidebands would land exactly on the original carrier ($f_c - f_1 + f_2 = f_c$ when $f_2=f_1$), causing an overlap. Likewise, if $f_2 = 2f_1$, then $f_c - f_1 + f_2 = f_c + f_1$, meaning a second-layer sideband would coincide with the first-layer upper sideband, merging two components. In general, for distinctness we require that no $f_k$ be equal to any integer linear combination of the others (otherwise a degenerate case of overlap will occur). In practical terms, a sufficient (though not strictly necessary) condition to avoid overlaps is to space the modulation frequencies in a descending order of magnitude such that each higher-frequency modulation is greater than the sum of all lower ones:
+\[
+f_1 \;>\; f_2 + f_3 + \cdots + f_N,\qquad
+f_2 \;>\; f_3 + f_4 + \cdots + f_N,\qquad \dots
+\]
+This set of inequalities guarantees a unique decomposition of any sideband frequency into the form \eqref{eq:ham_freqs}. If these conditions hold strictly, none of the sideband clusters will overlap. In the limit of many layers, this criterion approaches a geometric progression (discussed below).
+
+To illustrate, suppose $f_1 = 100~\text{kHz}$ and $f_2 = 40~\text{kHz}$. Then $f_1 > f_2$ and the first two layers’ frequencies are: $f_c \pm 100~\text{kHz}$, with secondary sidebands at $f_c \pm 100~\text{kHz} \pm 40~\text{kHz}$. These second-layer sidebands fall at $f_c \pm 60~\text{kHz}$ and $f_c \pm 140~\text{kHz}$. Note that these are well separated from the primary $f_c\pm100~\text{kHz}$ sidebands (which remain at 100~kHz offset) – the closest spacing is 40~kHz between a 60~kHz-offset line and the carrier, and similarly between a 140~kHz-offset line and the 100~kHz sideband. If instead $f_2$ were too large, say $f_2 = 90~\text{kHz}$ (almost as large as $f_1$), then the second-layer sideband $f_c - 100~\text{kHz} + 90~\text{kHz} = f_c - 10~\text{kHz}$ would sit only 10~kHz away from the carrier, and $f_c + 100~\text{kHz} - 90~\text{kHz} = f_c + 10~\text{kHz}$ would sit 10~kHz above the carrier. These would create a very tight clustering near $f_c$ and potentially overlap if the carrier itself had any finite linewidth or if $f_2$ increased further. Clearly, choosing $f_2$ nearly as large as $f_1$ compresses the spectral separation. Thus, a safety margin is needed: typically one ensures $f_2$ (and lower $f_k$) are sufficiently smaller than $f_1$ so that sidebands do not crowd each other.
+
+From a frequency-domain perspective, each modulation layer adds a new ``copy'' of the spectrum shifted by the modulation frequency. To prevent different copies from interfering, the modulation frequency must lie outside the bandwidth occupied by higher layers. In our hierarchical AM, if the first layer modulation has bandwidth $B_1$ around $f_c$ (for a pure tone $B_1$ is just that tone at $f_1$; if the modulating signal were a band of frequencies, $B_1$ would be its bandwidth), then the second layer’s frequency $f_2$ should be chosen such that the sidebands at $\pm f_2$ around each first-layer component do not overlap with adjacent components. This implicitly sets an upper bound on $f_2$ relative to the gap between primary components. Similarly, $f_3$ must be small enough relative to $f_2$ to fit sidebands in the gap around each $f_2$-offset line, and so on.
+
+\paragraph{Bandwidth and modulation index considerations:}
+In a multi-layer design, each modulation layer $k$ will effectively use up a certain bandwidth around each spectral line it modulates. If $m_k$ is large (deep modulation), the sidebands carry more power and one might allow a slightly larger bandwidth occupancy for that layer (for example, if the modulating signal is not a pure tone but has its own small bandwidth). However, too large $m_k$ can cause nonlinear distortion (for AM, $m_k>1$ leads to signal clipping/inversion) which can create additional unwanted spectral lines. Thus, typically one keeps $m_k \le 1$ and often $m_k \ll 1$ for higher layers so that those sidebands remain small and confined. The no-overlap condition imposes a trade-off: higher-layer modulations can occupy only a fraction of the spacing left by the layer above. In practice, one might design the modulation frequencies such that
+\[
+\frac{f_{k+1}}{f_k} < \gamma
+\]
+for some $\gamma < 1$ (e.g.\ $\gamma \approx 0.5$), and choose $m_k$ accordingly small, to ensure spectral clusters from different layers do not intrude on each other. This approach mirrors the strategy used in frequency planning to avoid intermodulation interference: one leaves guard bands so that no intermodulation product lands on top of an existing signal. Indeed, in RF systems manufacturers often recommend a minimum frequency margin between any two transmitters such that third-order intermodulation products cannot coincide with another carrier frequency. Similarly, our hierarchical modulation frequencies should be spaced with sufficient margin (relative to their bandwidths) to avoid any overlap of sideband ``images.''
+
+Mathematically, if we treat all modulation frequencies as independent (incommensurate), the spectral lines in Eq.\,\eqref{eq:hierarchical_freqs} will be distinct. However, distinct is not enough – we also want them well-separated to be easily filterable. That is why a geometric progression of frequencies is advantageous, as we discuss next.
+
+\paragraph{Derivation of logarithmic spacing:}
+A key result from the above conditions is that an approximately logarithmic spacing of the carrier and modulation frequencies naturally arises as the optimal way to maintain a consistent separation between sideband clusters at each layer. By logarithmic spacing, we mean that the center frequencies at successive layers are in a constant ratio (geometric progression). Let us denote the ratio between a carrier and its modulation frequency as $r$. For example, in a two-layer scheme, $r_1 = f_c/f_1$ and $r_2 = f_1/f_2$. If we desire self-similar spectral separation at each layer, we can set these ratios equal (and similarly for further layers),
+\[
+r_1 = r_2 = \cdots = r,
+\]
+so that 
+\[
+f_1 = \frac{f_c}{r},\quad f_2 = \frac{f_1}{r} = \frac{f_c}{r^2},\quad f_3 = \frac{f_c}{r^3},
+\]
+and in general $f_k = f_c/r^k$. This geometric series of frequencies corresponds to equal spacing on a logarithmic frequency axis (e.g.\ each layer might be one octave or one decade apart if $r=2$ or $r=10$, respectively). Logarithmic spacing directly implies a constant proportional bandwidth or Quality-factor: the ratio of frequency to bandwidth remains the same for each layer. In fact, using a logarithmic frequency scale produces a set of bands that form a constant-$Q$ filter bank, meaning each band’s $Q = \frac{\text{center frequency}}{\text{bandwidth}}$ is identical. Equivalently, all bands have the same fractional bandwidth when spaced geometrically.
+
+In the context of hierarchical AM, this is highly desirable. If each modulation frequency $f_{k+1}$ is, say, a fixed fraction of $f_k$ (i.e.\ $f_{k+1} = \alpha\,f_k$ for some $0<\alpha<1$), then each layer occupies the same fraction of its carrier’s spectrum. For instance, if $\alpha=0.5$ (spacing of one octave per layer), each new pair of sidebands sits at $\pm 50\%$ of the previous layer’s carrier frequency. This yields a uniform margin: the sidebands from layer $k+1$ will reach at most $\pm 50\%$ of $f_k$ away from each $f_c \pm \cdots \pm f_k$ line. As a result, none of those sidebands can touch the adjacent cluster (centered at $f_c \pm \cdots \pm f_{k-1}$), because the gap to the next cluster is also about 50\% of $f_k$ on each side. Geometric scaling thus guarantees a fixed relative separation between sideband groups at every layer. In contrast, if one attempted linear spacing (e.g.\ $f_k = f_c - (k-1)\Delta f$ for some fixed $\Delta f$), the highest-frequency layers would be cramped together (small absolute gaps near $f_c$) while the lowest layers would be excessively far apart in relative terms. The logarithmic choice equalizes these proportional gaps.
+
+Another way to derive the need for log-spacing is by considering the cumulative frequency span of the lower layers. Suppose we use $N$ layers. If each layer $k$ is a fraction $\alpha$ of the previous, then the total fraction of $f_1$ occupied by all lower layers is $\alpha + \alpha^2 + \cdots + \alpha^N < \frac{\alpha}{1-\alpha}$ (for $\alpha<1$). If $\alpha$ is small (strongly logarithmic spacing), the sum is bounded and the highest layer ($f_1$) dominates the spacing. As $N$ grows (more layers), there is still room because the series converges. In the extreme case of infinitely many layers, avoiding overlap would require $\alpha \le 0.5$ so that $\alpha/(1-\alpha) \le 1$ (the worst-case limit where the sum of all lower sideband spans equals $f_1$ but never exceeds it). This aligns with our earlier heuristic that each frequency should exceed the sum of all lower frequencies. Thus, from first principles of avoiding intermodulation overlap, one is naturally led to a geometric series of frequencies. It is no coincidence that many physical and engineered systems use log-spaced frequency bands to handle multi-scale signals. For example, the human auditory system’s frequency sensitivity is roughly logarithmic; the cochlea can be modeled as a bank of bandpass filters whose center frequencies follow the Greenwood equation (approximately exponential distribution along the cochlear length), resulting in roughly constant-$Q$ filtering across the audible spectrum. Indeed, analysis of speech and music often employs a logarithmic frequency axis for amplitude modulation spectra, capturing slow prosodic modulations and faster phonetic modulations in separate bands. In the same vein, a hierarchical modulator with geometric spacing ensures that each layer can be demodulated with a similar relative bandwidth and tuning, simply scaled in frequency. This self-similarity greatly simplifies the design of demodulation filters and circuits, as discussed below.
+
+\paragraph{General insights for demodulation and system design:}
+The hierarchical AM structure described above is essentially a fractal or self-similar encoding of information across multiple time-scales (frequency decades). Such a structure generalizes beyond radiofrequency carriers – it can describe any scenario where a faster oscillation is amplitude-modulated by slower processes in a nested way. One implication is that demodulation can be performed in stages: a receiver can sequentially recover the information from the top layer downwards. For example, an envelope detector (or synchronous demodulator) tuned around the main carrier $f_c$ will first recover the composite modulation signal at $f_1$ (which itself contains deeper modulations). Then, treating that recovered $f_1$ signal as a new ``carrier,'' a second demodulation stage can recover the $f_2$ content, and so on. In a properly log-spaced design, each demodulation stage faces a similar task: extracting a modulation that is some fixed fraction of its carrier frequency. Thus one can cascade identical demodulation modules (with appropriate center-frequency scaling) to peel off each layer of modulation. This cascading is sometimes called a demodulation cascade or iterative envelope detection, and it aligns with the constant-$Q$ nature of log-spaced bands. Alternatively, one could employ a bank of band-pass filters to directly isolate each sideband cluster $f_c \pm \cdots \pm f_k$ and feed each into a dedicated detector. The filter for the $k$th layer would need a bandwidth proportional to $f_k$ (since the information encoded at that layer has bandwidth on the order of $f_k$). Again, this underscores the convenience of constant-$Q$ (logarithmic) spacing: one filter design can, in principle, be scaled to all relevant center frequencies.
+
+From a system design perspective, hierarchical AM with logarithmic spacing provides robustness and scalability. Each layer modulates a distinct octave (or decade, etc.) of the spectrum, minimizing interference between layers. This can be advantageous when encoding multiple streams of information of differing rates or importance: a high-rate signal can occupy the high-frequency modulation band ($f_1$) while a lower-rate, perhaps more crucial control signal could be embedded as a slow envelope ($f_2$, $f_3$, etc.). The slower signals will not interfere with the fast signal’s band and can be recovered even if the fast signal is lost or vice versa. In communications, this idea relates to multi-layer coding (also known as hierarchical modulation in digital communications, where two bit-streams are superimposed such that one can be decoded at lower SNR than the other). The analog hierarchical AM described here achieves a similar layering in the frequency domain.
+
+Finally, the hierarchical AM structure hints at a more abstract principle: scale-invariant processing. Systems that employ such modulation implicitly assume that similar processes repeat at multiple scales. Designing with logarithmic frequency progression leverages this scale invariance; the same filter or circuit can operate at any center frequency by scaling, since the pattern of sidebands is identical on a log-frequency plot. This is analogous to wavelet transforms in signal processing, which use dilated (stretched) versions of a mother wavelet to analyze different scales – resulting in constant-$Q$ analysis bands. In our case, the ``wavelets'' are simply the modulated carriers at each layer. The benefit is a unified framework for filtering and demodulation: a single template for a band-pass filter and envelope detector can, when scaled appropriately, extract any layer’s information.
+
+In summary, hierarchical AM produces a rich spectrum of nested sidebands, and enforcing a logarithmic progression of center frequencies (with appropriate modulation indices) ensures these sidebands are well separated. This spacing avoids overlap and maintains a constant proportional bandwidth at each level, greatly simplifying the task of sequentially decoding the layers. These properties are not only theoretically elegant but also practically useful – they mirror strategies found in nature (e.g.\ auditory frequency analysis) and engineering (constant-$Q$ filter banks, wavelet-based analyzers, multi-rate communication schemes), where multi-scale information must be handled without mutual interference. The result is a hierarchical encoding that can be cleanly decoded and robustly managed, with each layer residing in its own niche of the spectrum.
+
+% \subsection{Hierarchical Demodulation Process}
+
+% To reconstruct the modulation layers from a received HAM signal, a **stepwise demodulation** process is required:
+
+% \begin{enumerate}
+%     \item \textbf{First Envelope Extraction}: Compute the envelope of the received signal (via Hilbert transform or rectification). This removes high-frequency oscillations, isolating the amplitude variations due to the fastest modulation frequency $f_1$.
+%     \item \textbf{Recursive Demodulation}: Treat the extracted envelope as a new baseband signal and extract its envelope to reveal the next slower modulation. This process is repeated iteratively, recovering each modulation layer in succession.
+%     \item \textbf{Reconstruction of the Full Hierarchy}: After $N$ demodulation steps, the slowest modulation component $f_N$ is recovered, completing the extraction of the full set of amplitude variations from the original signal.
+% \end{enumerate}
+
+% Each step effectively decodes one layer of the hierarchical modulation, ensuring that the full set of embedded signals can be retrieved without distortion.
+
+
+
+
+% \paragraph{General insights for demodulation and system design:}
+% Hierarchical AM is essentially a multi-scale encoding of information, and it can be demodulated sequentially by “peeling off” layers. A standard AM detector or synchronous demodulator tuned at $f_c$ recovers the first-layer signal (centered near $f_1$); that recovered signal can be treated as a carrier for extracting the second-layer modulation at $f_2$, and so on. Alternatively, one may use a bank of bandpass filters to isolate each cluster of sidebands. Logarithmic frequency spacing greatly streamlines this approach by making each filter stage a scaled version of the same design.
+
+% Practically, hierarchical AM with geometric spacing offers:
+% \begin{itemize}
+%     \item Robust separation of multi-rate signals (fast vs.\ slow layers).
+%     \item Scale-invariant filtering/demodulation (each layer is a constant-$Q$ band).
+%     \item Minimal interference among layers, since each resides in its own frequency “octave” (or decade).
+% \end{itemize}
+% Similar principles appear in multi-layer communication protocols (hierarchical modulation), wavelet-based time-frequency analysis, and biological sensory systems. Overall, logarithmically spaced hierarchical AM provides a powerful framework for encoding and retrieving signals at multiple nested scales without mutual interference.
+
+
+
+
+\subsubsection*{Avoiding Distortion with $m < 1$} 
+ The modulation index $m$ (modulation depth) governs how strongly each oscillator modulates the next. Crucially, \textbf{when $m < 1$}, each factor remains positive for all $t$ (since $1 + m\cos(\cdot) > 0$ as the minimum value is $1 - m > 0$). In this \textbf{under-modulation} regime, the slower oscillations simply scale the amplitude of faster ones without inverting or distorting them. The envelope of the signal accurately follows the shape of the modulating wave, maintaining a one-to-one correspondence between modulator and envelope. Each modulation layer can thus be treated separately as a linear amplitude scaling of the next layer.
+
+If \textbf{$m = 1$} (100\% modulation), the lowest value of $1 + m\cos(\cdot)$ reaches zero. At those moments the amplitude of the affected oscillator is zero, causing \textbf{critical modulation} where the carrier (or faster wave) is completely suppressed at troughs. At \textbf{$m > 1$}, \textbf{overmodulation} occurs -- the term $1 + m\cos(\cdot)$ becomes negative during part of the cycle. This means the instantaneous amplitude inversion of that layer (the carrier’s phase flips by 180$^\circ$ when the amplitude goes negative). The result is a \textbf{distorted envelope} and a breakdown of the simple multiplication structure into a nonlinear regime. Instead of a clean amplitude modulation, the slower wave now also induces phase reversals in the faster wave.
+
+ 
+A key virtue of keeping the modulation depth $m$ below 1 is that it preserves an orderly spectral structure. \textbf{Moderate modulation ($m < 1$)} results in a \textbf{spectrum with a clear power-law or hierarchical distribution} of energy: the majority of signal power remains concentrated at the fundamental frequencies of each oscillator (and their primary sidebands), and progressively less power appears at higher-order combination frequencies. Intuitively, each successive modulation layer contributes smaller amplitude fluctuations (scaled by powers of $m$), so the spectral contributions diminish rapidly for higher-order terms. This often manifests as a \textbf{1/f-like decay} in power: lower-frequency modulators (being first-order terms) have the strongest amplitudes, and higher-frequency modulations or sidebands (higher-order products) have much lower power.
+
+When \textbf{$m$ is too high (approaching or exceeding 1)}, the spectral purity is compromised. \textbf{Excessive modulation depth ($m \geq 1$)} drives strong nonlinearities that \textbf{generate a plethora of harmonics and intermodulation frequencies}. Instead of a neat pair of sidebands or a few small extra peaks around each fundamental frequency, the signal develops a wide range of frequency components. The end result is \textbf{spectral clutter}: many frequencies carry significant power. This disrupts any power-law decay; higher-order terms no longer fade out but instead can carry comparable energy.
+ 
+Natural systems that exhibit hierarchical oscillations -- \textbf{especially the brain’s neural oscillations} -- appear to enforce the $m < 1$ principle to maintain functional integrity. The brain produces many oscillatory rhythms (delta, theta, alpha, beta, gamma, etc.), which are often nested: slower rhythms modulate the amplitude or timing of faster rhythms. This is conceptually analogous to HAM, where a low-frequency oscillator’s phase or amplitude influences a higher-frequency oscillator’s amplitude. Maintaining $m < 1$ in these neural modulations preserves \textbf{well-separated oscillatory bands}. Each brainwave band retains its characteristic frequency range and identity, which is important because different bands subserve different physiological functions.
+
+In summary, \textbf{overmodulation is avoided in both engineered HAM systems and natural oscillatory hierarchies} because it leads to distortion, loss of independent layers, and spectral disarray. The condition $m < 1$ keeps each modulation layer linear and the overall signal decomposable into distinct frequency components.  
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Modulation and demodulation in LaNMM}
+
+We previously introduced a laminar neural mass model (LaNMM) designed to capture both superficial-layer fast and deeper-layer slow oscillations along with their interactions, such as phase-amplitude coupling (PAC) and amplitude-amplitude anticorrelation (AAC)\cite{sanchez-todo_physical_2023}. The spectrolaminar motif is ubiquitous across the primate cortex \cite{mendoza-hallidayUbiquitousSpectrolaminarMotif2024}.  
+
+In order to implement and process information in the amplitude modulation scheme, modulation and demodulation need to be implemented. Here, we describe the methods used to show how this can be achieved (see Figures~\ref{fig:LaNMM_Mod_Demod} and~\ref{fig:modulation}).
+
+
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{figures/mod_demod.png}
+    \caption{Conceptual diagram and representative data demonstrating LaNMM acting as both modulator and demodulator:
+    a) The prior modulates the amplitude/frequency of a faster carrier input;
+    b) The input’s envelope is extracted by the slow dynamics of P1, illustrating demodulation.}
+    \label{fig:LaNMM_Mod_Demod}
+\end{figure}
+
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{figures/modulation.png}
+    \caption{\textbf{Modulation schemes.} a) Modulation of a carrier by a message through multiplication. b) Implementation in laNMM through top-down inputs from a parcel Y upstream to slow population or inhibitory neurons in the fast circuit. A steady oscillation (carrier) is received from the downstream parcel W. The modulated carrier output is sent upstream to Parcel Y. In Model 1, top-down excitatory inputs arrive at the pyramidal cell in L5. In Model 2, they arrive at the PV+ interneuron in L1, with inhibitory consequences for the PING pyramidal population in L1.}
+    \label{fig:modulation}
+\end{figure}
+
+
+
+\subsection{Mechanisms: SEC and EEC}
+\textbf{Signal-Envelope Coupling (SEC)}—related though not equivalent to phase-amplitude coupling (PAC) \cite{spaakLayerspecificEntrainmentGammaband2012, szczepanskiDynamicChangesPhaseamplitude2014, dvorakProperEstimationPhaseamplitude2014, mejiasFeedforwardFeedbackFrequencydependent2016, chackoDistinctPhaseamplitudeCouplings2018, bastos_laminar_2018} refers to the idea that a slow signal can couple to the envelope of a faster signal. In predictive coding, for example\cite{Ruffini2025Comparator}, a slower rhythm (encoding predictions) modulates the envelope (i.e., overall magnitude) of faster oscillations (encoding sensory data), aligning the processing of fast inputs with the slower predictive signal. %Figure~\ref{fig:collision} illustrates a particle-collision metaphor: incoming information (a photon) collides with a prediction (a positron), yielding an error signal (outgoing photon) that ascends the hierarchy and an updated prediction (outgoing positron) that descends.
+
+%In contrast, \textit{routing} or \textit{gating} \cite{bastosLayerRhythmSpecificity2020,jensenShapingFunctionalArchitecture2010} in predictive coding dynamically modulates information flow across cortical hierarchies, determining which signals propagate based on their relevance. Gating by inhibition, for example, correlates with alpha activity in task-irrelevant areas.
+
+\textbf{Envelope-Envelope Coupling (EEC)}—also known as Amplitude-Amplitude Coupling (AAC) or power coupling—acts as a slower gating mechanism by modulating the envelope of fast oscillations according to the envelope of a slower rhythm. This creates periods of increased or decreased excitability that selectively allow or restrict the propagation of error signals, thus aligning predictive coding circuits with high-level task demands (e.g., attention and vigilance).
+
+In this study, we use the \textit{Laminar Neural Mass Model} (LaNMM)  to investigate interactions between two neural populations, $P_1$ and $P_2$, under varying external inputs $\varphi_{e1}(t)$ and $\varphi_{e2}(t)$. We analyzed Envelope-to-Envelope Coupling (E2E), Signal-to-Envelope Coupling (S2E), and power dynamics in specific frequency bands. External inputs were generated using a multiscale noise generator (see Appendix~\ref{appendix:noise_generation} and Figure~\ref{fig:noise_generated}). Simulations were conducted over a two-dimensional parameter space by sweeping the mean input values $\mu_{P1}$ and $\mu_{P2}$, discarding initial transients, and storing the membrane potential time series $v_{P1}(t)$ and $v_{P2}(t)$.
+
+
+\begin{figure}[t!]
+    \centering
+       \includegraphics[width=0.75\linewidth]{figures/couplings_e1_drive.png}
+          \includegraphics[width=0.75\linewidth]{figures/couplings_e2_drive.png}
+\includegraphics[width=0.75\linewidth]{figures/couplings_e2_drive_e2toPV.png}
+          
+    \caption{Scatter plots illustrating Envelope-to-Envelope Coupling (E2E) and Signal-to-Envelope Coupling (S2E) between neural populations \( P_1 \) and \( P_2 \) for random inputs to P1 (top row), P2 (middle row), and PV (bottom row). Both P1 and P2 receive a constant mean external drive (x and y axis), but zero mean noise is injected into one of them via a glutamatergic synapse (with C=1). This dual-input strategy allows the model to capture both the steady excitatory drive and the stochastic fluctuations affecting the desired population.The left column shows the correlation between the alpha envelope of \( P_1 \) and the gamma envelope of \( P_2 \) (E2E), while the right column depicts the correlation between the alpha signal of \( P_1 \) and the gamma envelope of \( P_2 \) (S2E).  Pearson correlation coefficients are included to quantify the strength of the couplings.}
+    \label{fig:couplings}
+\end{figure}
+
+
+ 
+E2E was quantified via the Pearson correlation between the alpha-band ($8$–$12\,\text{Hz}$) amplitude envelope of $P_1$ and the gamma-band ($30$–$50\,\text{Hz}$) envelope of $P_2$. S2E was assessed by correlating the bandpassed alpha signal of $P_1$ with the gamma envelope of $P_2$. Additionally, power in the alpha and gamma bands was computed using the Hilbert transform and Welch’s PSD estimation, providing insights into the oscillatory behavior and energy distribution under different input conditions.
+
+
+%%%%%%
+
+
+
+\section{Iterative Construction of Hierarchical AM for LaNMM implementation}
+\label{sec:simplified_hierarchical_am}
+
+A concise way to model a nested or ``laminar'' amplitude modulation scheme is to let each new signal 
+\[
+   s_{j}(t)
+\]
+be formed by taking the previous envelope \(s_{j-1}(t)\) and embedding it as the modulation of a higher-frequency carrier \(\cos(2\pi\,f_{j}\,t + \phi_{j})\). Including a positive offset ensures the overall signal remains non-negative (reflecting firing rates or baseline activity). Symbolically,
+\[
+   \boxed{
+   s_{j}(t) 
+   \;=\; 
+   A_{j}
+   \,\Bigl[
+   1 
+   \;+\;
+   m_{j}\,s_{j-1}(t)\;\cos\bigl(2\pi\,f_{j}\,t + \phi_{j}\bigr)
+   \Bigr],
+   }
+\]
+where
+\begin{itemize}
+    \item \(A_{j} > 0\) sets the baseline (DC offset),
+    \item \(m_{j}\) is the modulation index for layer \(j\),
+    \item \(f_{j}\) is the new (faster) carrier frequency at layer \(j\),
+    \item \(\phi_{j}\) is a phase term.
+\end{itemize}
+
+Thus each stage builds on the previous envelope:
+\[
+   s_{j-1}(t) 
+   \;\longrightarrow\; 
+   s_{j}(t),
+\]
+with the faster carrier \(\cos(2\pi f_{j} t + \phi_{j})\) added into the mix. In the time domain, \(s_{j-1}\) no longer appears as a separate low-frequency component but instead shapes the amplitude of \(\cos(2\pi f_{j} t)\). Over multiple layers \(j = 1,2,\dots\), this yields a nested hierarchy of amplitude-modulated signals, each centered on a higher-frequency band.
+
+
+ 
+
+When each stage of the hierarchical AM generates a signal 
+\[
+  s_{j}(t) 
+  \;=\; 
+  A_{j}\,\Bigl[\,1 + m_{j}\,s_{j-1}(t)\,\cos\!\bigl(2\pi\,f_{j}\,t + \phi_{j}\bigr)\Bigr],
+\]
+and we then \emph{add} all such signals to form a total output,
+\[
+  S_{\mathrm{total}}(t)
+  \;=\;
+  \sum_{j=1}^{J}\,s_{j}(t),
+\]
+the resulting spectrum contains contributions from \emph{every} layer’s carrier and sidebands, plus any offsets (DC terms). In essence, each new layer $j$ multiplies the previous layer’s signal $s_{j-1}(t)$ by $\cos(2\pi\,f_{j}t + \phi_{j})$, creating \emph{products} in the frequency domain. Concretely:
+
+\begin{enumerate}
+\item \textbf{Base Term and Offset:}
+  Each $s_{j}(t)$ has a baseline amplitude $A_{j}$ contributing a \emph{DC component} in the frequency domain. Summed across all layers, these offsets accumulate into a larger DC term.
+
+\item \textbf{Sideband Generation via Multiplication:}
+  The factor $s_{j-1}(t)\,\cos(2\pi\,f_{j}t)$ manifests as a \emph{product} in the time domain, which corresponds to a \emph{convolution} of their spectra in the frequency domain. 
+  \begin{itemize}
+    \item If $s_{j-1}(t)$ contains frequencies $\{\dots,f_{j-1},\,0,\,{-}f_{j-1},\dots\}$ (plus possibly other sums/differences from \emph{earlier} stages), then multiplying by $\cos(2\pi\,f_{j}t)$ yields new components at 
+    \[
+      f_{j} \;\pm\;(\text{any frequency in }s_{j-1}),
+    \]
+    and also preserves any offset multiplied by $f_{j}$.
+  \end{itemize}
+
+\item \textbf{Combinatorial Sidebands:}
+  Iterating over $J$ layers means each layer $j$ can introduce sidebands around $f_{j}$ \emph{shifted} by frequencies from the earlier layers $1,\dots,(j-1)$. In the small-modulation limit ($m_{k}\ll1$), the amplitude of each “mixed” component is roughly the \emph{product} of the relevant $m_{k}$ factors. For example, if $s_{j-1}(t)$ already had lines at $f_{j-1}\pm f_{j-2}\pm\cdots$, then $s_{j}(t)$ brings new lines at
+  \[
+    f_{j} 
+    \;\pm\; f_{j-1}
+    \;\pm\; f_{j-2}
+    \;\pm\;\cdots,
+  \]
+  with amplitude scaling $\sim A_{j} \,(m_{j} \,m_{j-1}\,\cdots )$.
+
+\item \textbf{Final Summation:}
+  Because $S_{\mathrm{total}}(t)$ is simply the linear superposition of all $s_{j}(t)$, one ends up with a \emph{comprehensive} spectrum containing:
+  \[
+    \bigl(\text{DC offsets,}\; 
+    \pm f_{1},\; 
+    \pm f_{2},\;
+    \pm (f_{2}\pm f_{1}),\;
+    \pm (f_{3}\pm f_{2}\pm f_{1}),\;\dots \bigr),
+  \]
+  i.e.\ every combination arising through successive multiplications.  The amplitude of a sideband that involves \emph{$k$} different modulations is proportional to the \emph{product} of $k$ modulation indices.
+
+\end{enumerate}
+
+\vspace{1em}
+\paragraph{Overlap vs.\ Separation.} 
+If the $\{f_{j}\}$ are chosen far apart (for instance, in a descending or geometric progression), most sidebands cluster around well-separated centers $\pm f_{j}$.  Under that condition, each cluster is distinct and the overall spectrum appears as a \emph{comb} of frequencies: $f_{1},\,f_{2},\dots$ plus linear combinations.  Conversely, if two carriers $f_{i}$ and $f_{j}$ are commensurate (integer multiples), certain intermodulation products coincide, merging sidebands and creating stronger or overlapping peaks.  
+
+\paragraph{Physiological Interpretation.}
+In a laminar neural model, one might measure all these signals at once (e.g.\ in an intracortical probe or scalp EEG).  The raw summed signal exhibits components at multiple frequencies, some of which reflect \emph{cross-frequency} couplings (i.e.\ sidebands).  If each layer’s output $s_{j}(t)$ is viewed in isolation, then the nesting is clearer: a layer-$j$ “carrier” is amplitude-modulated by lower layers’ envelopes.  Summing yields a rich spectral profile spanning multiple scales.
+
+In short, the total spectrum is the superposition of all layer-specific carriers and their modulation sidebands.  The structure can be kept relatively clean and non-overlapping if each frequency $f_{j}$ is sufficiently distinct and the modulation indices $m_{j}$ are small.  Otherwise, strong intermodulations can blur the spectral hierarchy.
+
+
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Hierarchical AM and Power-Law Spectrum Scaling of Sidebands}
+
+Consider a signal constructed by \textbf{hierarchical amplitude modulation} -- a cascade of oscillations where each oscillation’s amplitude is modulated by a slower one. The model signal is given by: 
+\[ 
+    x(t) \;=\; \prod_{i=1}^{N}\!\Big[\,1 + m\,\cos(2\pi f_i t + \phi_i)\Big]\,,
+\] 
+where all modulators have the same depth $0<m<1$ and their frequencies $\{f_i\}$ are \textbf{geometrically spaced}. Specifically, each successive frequency is a fixed fraction $r$ of the previous: $f_{k} = f_c / r^k$. (Here $f_c$ is a reference frequency and $0<r<1$ is the ratio of one band’s center frequency to the next higher band -- for example, $r\approx 1/3$ means each band is about one-third the frequency of the next band, as observed in brain rhythms.) This multiplicative structure reflects a hierarchy of fast oscillations nested within slower oscillations.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.85\linewidth]{figures/power_law.png}
+    \caption{Heatmap of the scaling exponent $\alpha$ in the power-law relation  $P(f) \sim 1/f^\alpha$  as a function of the geometric spacing ratio  $r$  and the modulation depth  $m$. The exponent is given by
+$
+\alpha \;=\; {2\,\ln(2/m)} / {\ln(1/r)}
+$
+where  $r$  determines the logarithmic spacing between successive frequency bands, and  $m$  sets the strength of hierarchical amplitude modulation. Lower values of  $r$  (i.e., larger frequency gaps) and higher values of  $m$  (i.e., weaker modulation) produce shallower spectral slopes (smaller $\alpha$), whereas closer frequency spacing and stronger modulation lead to steeper power-law decay. The structure reveals the continuous tuning of spectral scaling in hierarchical AM systems.}
+    \label{power_law}
+\end{figure}
+\subsubsection*{Spectral components generated}
+
+When we expand the product $x(t)$, each modulation layer contributes new frequency components by \textit{multiplicative mixing}. For small $m$, we can understand this in stages:
+
+- \textbf{Single modulator:} $x(t) = [1 + m\cos(2\pi f_1 t)]$ produces a \textbf{carrier} at $0$ Hz (DC) and a sideband at $f_1$.  In other words, $x(t) = 1 + m\cos(2\pi f_1 t)$ contains a constant component and an oscillatory component at $f_1$ (with amplitude $m/2$ relative to the DC). Its power spectrum has a line at $f_1$ with power $\propto (m/2)^2$.
+
+- \textbf{Two modulators:} $x(t) = [1 + m\cos(2\pi f_1 t)][1 + m\cos(2\pi f_2 t)]$. Expansion yields frequency components at $f_1$, $f_2$, their sum $f_1+f_2$, and their difference $|f_1 - f_2|$. Each “mixing” reduces amplitude by a factor $\sim m/2$. For example, the component at $f_1 \pm f_2$ has amplitude $\approx (m/2)^2$ (since it comes from the product of two cosines). Generally, \textbf{each modulation layer multiplies existing components, generating new sideband components at frequencies offset by the modulator frequency}. 
+
+This \textit{cascade} produces a dense set of frequencies: after $N$ layers, frequencies appear at combinations $\pm f_1 \pm f_2 \pm \cdots \pm f_N$. Due to the geometric spacing, these combinations tend to fill the spectrum between the fundamental bands. In effect, \textbf{the hierarchical modulation fills in frequencies across scales}, yielding a self-similar, broadband spectrum.
+
+- \textbf{Amplitude scaling:} A component that results from $k$ successive modulations has amplitude on the order of $(m/2)^k$. (Each time a cosine term is picked from a bracket, it contributes a factor $m/2$ to the amplitude.) Lower-frequency components (involving fewer modulators) have larger amplitude, whereas high-frequency components (involving many modulators in combination) have very small amplitude. This creates a systematic \textbf{amplitude–frequency relationship}: as frequency increases, amplitude drops. The power of a component (amplitude$^2$) scales roughly as $(m/2)^{2k}$ if that component is generated by $k$ modulation factors.
+
+\subsubsection*{Power Spectrum Scaling as $1/f^\alpha$}
+
+Because of this hierarchical structure, the \textbf{spectral power distribution follows a power law}. Intuitively, each modulation stage shifts a fraction of the signal’s power into higher frequencies. The \textit{self-similar} nature of the cascade -- with a fixed frequency ratio $1/r$ between layers and a fixed amplitude ratio $m/2$ for new sidebands -- leads to an approximately scale-free spectrum $P(f)\sim 1/f^\alpha$.
+
+By relating the \textbf{frequency scale factor} to the \textbf{amplitude scale factor}, we have
+
+\[ A(f) \;\propto\; \big(m/2\big)^{\,\log_{1/r}(f/f_{\text{base}})} \;=\; (f/f_{\text{base}})^{\,\log_{1/r}(m/2)}
+\] 
+
+Since power scales as amplitude squared, we obtain:
+
+\[ P(f) \;\propto\; f^{\,2\,\log_{1/r}(m/2)} \;=\; \frac{1}{f^{\,\alpha}} \]
+
+where the \textbf{power-law exponent} is
+
+\[ \alpha \;=\; -\,2\,\log_{1/r}\!\Big(\frac{m}{2}\Big) \;=\; \frac{2\,\ln(2/m)}{\ln(1/r)}. \]
+
+This result shows that the power-law exponent $\alpha$ depends directly on the modulation depth $m$ and the geometric spacing ratio $r$.  See Figure~\ref{power_law} for a plot of this function.
+
+\subsubsection*{Relation to Neural Oscillation Bands}
+
+Penttonen and Buzsáki (2003) \cite{penttonenNaturalLogarithmicRelationship2003} reported that prominent brain oscillations in the rat form a \textbf{logarithmic frequency hierarchy}. Empirical EEG/LFP spectra often show $\alpha$ in the range 1–3, which corresponds to modulation depths $m$ in a realistic range (e.g. $m\sim0.5$–$0.8$ for $r\approx1/3$ yields $\alpha\sim1.5$–2.5).
+
+This theoretical mechanism suggests that the observed $1/f^\alpha$ spectral scaling in neural recordings emerges from the cascading hierarchical AM process, where slow oscillations modulate faster ones in a multiplicative, scale-free fashion.
+ 
+
+
+
+
+
+
+
+
+
+% \section{Hierarchical Amplitude Modulation and Power-Law Scaling of oscillatory spectrum (I)}
+
+% \subsection{Problem Statement}
+% Hierarchical amplitude modulation (HAM) refers to nested amplitude modulations across multiple frequency bands. In a *naive* HAM implementation, each carrier (the faster oscillation) maintains unit amplitude at every level of the hierarchy, and only the sideband components introduced by modulation decay in amplitude at higher levels. In other words, an oscillation at each new fast frequency is added with full strength, and only the modulation-induced sidebands are weaker. This leads to a **spectrum with strong persistent peaks** at the carrier frequencies and diminishing sideband power around them. Such a spectrum is inconsistent with the broadband **power-law $1/f^\alpha$ scaling** observed in electrophysiological signals (EEG/MEG), where power continuously decays with frequency. Empirically, EEG/MEG spectra exhibit scale-invariant $1/f$ behavior (with $\alpha\approx 2$ in many cases), meaning **no frequency maintains a fixed amplitude plateau** across scales. The naive HAM model’s retention of unit-amplitude carriers at each level thus contradicts the experimental fact that higher frequencies have substantially lower power than slow oscillations.
+
+% \subsection{Solution 1: Attenuation Factors per Level}
+% A straightforward fix is to introduce an **attenuation factor** $a_k$ ($0 < a_k < 1$) at each hierarchical modulation step $k$. This factor scales down the carrier amplitude as the hierarchy deepens, ensuring that even the carrier components **decay** over successive modulations (not just the sidebands). Mathematically, consider a fast base oscillation $x_0(t) = A_0 \cos(2\pi f_0 t)$ with initial amplitude $A_0$. After one modulation by a slower frequency $f_1$ (modulation depth $m$), the signal is: 
+% \[ 
+% x_1(t) = \big(a_1 + m\cos(2\pi f_1 t)\big)\,A_0\cos(2\pi f_0 t)~,
+% \] 
+% where $0<a_1<1$ attenuates the $f_0$ carrier. Expanding this (using $\cos A\cos B = \frac{1}{2}[\cos(A+B) + \cos(A-B)]$) shows that the carrier at $f_0$ now has amplitude $A_0a_1$, and sidebands at $f_0\pm f_1$ have amplitudes $\frac{A_0 m}{2}$ (proportional to $A_0a_1$ if $m\ll 1$). With a second modulation by $f_2$, an additional factor $a_2$ attenuates the remaining carriers:
+% \[ 
+% x_2(t) = \big(a_2 + m\cos(2\pi f_2 t)\big)\,x_1(t)~,
+% \] 
+% so the $f_0$ component is further scaled to $A_0a_1a_2$, and new sidebands (at offsets $\pm f_2$) are introduced with amplitude $\frac{m}{2}$ times the current carrier amplitude $A_0a_1$. Proceeding in this way, after $k$ hierarchical modulations the **carrier amplitude** at the original frequency $f_0$ (or any component that remained unshifted through those steps) is: 
+% \[ 
+% A_k \;=\; A_0 \prod_{j=1}^k a_j~, 
+% \] 
+% and its **power** is $P_k = A_k^2 = A_0^2 \prod_{j=1}^k a_j^2$. More generally, *every* spectral component’s amplitude will include a product of certain $a_j$ factors (one for each level where it persisted as a carrier rather than being generated as a sideband). Because $a_j<1$, **all components decay exponentially with depth**, avoiding any flat, unit-amplitude carriers at high frequencies.
+
+% To achieve a **power-law** $1/f^\alpha$ scaling, the attenuation factors $a_k$ can be chosen such that amplitude decreases in a manner correlated with frequency. For simplicity, suppose each level has the *same* attenuation $a_k = a$ and the characteristic frequencies at successive levels decrease by a constant factor (e.g. $f_{k} = f_{0}/r^{\,k}$ for some ratio $r>1$). In that case, the amplitude of a component at frequency $f_k$ scales as 
+% \[A(f_k) \propto A_0\,a^k = A_0\,(a)^{\log_r(f_0/f_k)} = A_0\,(f_0/f_k)^{\ln(a)/\ln(r)}~.\] 
+% This is a power-law dependence $A(f)\propto f^{-\beta}$ with exponent $\beta = -\ln(a)/\ln(r)$ for the amplitude. Consequently, the **power** scales as $P(f)\propto |A(f)|^2 \propto f^{-2\beta}$. The **power-law exponent** is 
+% \[ \alpha = 2\,\beta = \frac{2\,\ln(1/a)}{\ln(r)}~. \] 
+% For example, if each hierarchical step doubles the frequency range ($r=2$) and halves the amplitude ($a=1/2$), then $\ln(1/a)/\ln(r) = \ln 2/\ln 2 = 1$, giving $\alpha = 2$. 
+
+% \subsection{Solution 2: Frequency-Dependent Modulation Depth}
+% An alternative mechanism to enforce proper scaling is to make the **modulation depth frequency-dependent**. Instead of using a constant modulation index $m$ at all levels, we let 
+% \[ m_k = \frac{m_0}{\,f_k\,}~, \] 
+% i.e. higher-frequency modulations contribute progressively weaker sidebands. Intuitively, fast oscillations (high $f$) are less effective modulators, while slow oscillations (low $f$) modulate with larger depth. The power-law exponent in this case is approximately 
+% \[ \alpha \approx 2~. \] 
+
+% \subsection{Physiological Motivation: Cortical Spatial Coherence}
+% These mathematical fixes are motivated by neurophysiological principles of how oscillations propagate in the cortex. **Slow, large-scale oscillations** tend to synchronize over broad cortical areas, whereas **faster oscillations** are confined to smaller, local networks. This naturally aligns with attenuation factors or frequency-dependent modulation depths in hierarchical models. EEG/MEG findings show that slow oscillations exhibit long-range coherence across the cortex, while high-frequency oscillations remain localized, leading to a scale-free power-law spectrum.
+
+
+
+
+
+
+
+\section{Power-law Scaling of oscillatory spectrum (I) }
+
+We simulated the emergence of scale-free spectral structure from hierarchical amplitude modulation (AM) among oscillatory components spanning finely divided canonical brain rhythms.
+
+\textbf{Oscillator Generation.} A total of $N = 1000$ oscillators were sampled uniformly from twelve refined frequency bands: low delta (0.5–2 Hz), high delta (2–4 Hz), low theta (4–6 Hz), high theta (6–8 Hz), low alpha (8–10 Hz), high alpha (10–12 Hz), low beta (12–20 Hz), mid beta (20–28 Hz), high beta (28–35 Hz), low gamma (35–50 Hz), mid gamma (50–100 Hz), and high gamma (100–200 Hz).
+
+\textbf{Pairwise Interactions.} Oscillators were randomly paired. For each pair, the lower-frequency oscillator was assigned as the modulator $f_m$ and the higher-frequency oscillator as the carrier $f_c$. Each pair contributed spectral energy at four frequencies:
+\begin{enumerate}
+  \item the modulator frequency $f_m$,
+  \item the carrier frequency $f_c$,
+  \item the lower sideband $f_c - f_m$,
+  \item the upper sideband $f_c + f_m$.
+\end{enumerate}
+
+Each component was convolved with a Gaussian kernel centered at its frequency (standard deviation $\sigma = 0.5$ Hz) to simulate realistic spectral broadening.
+
+\textbf{Spectrum and Fitting.} The final spectrum was normalized and plotted on a log-log scale. To quantify the emergence of scale-invariance, a linear regression was performed in log-log space over the frequency range 1–200 Hz, yielding an estimate of the power-law exponent $\alpha$ in $1/f^\alpha$.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/Aggregate Spectrum from Hierarchical AM Simulation (Refined Bands).png}
+    \caption{Power law from HAM}
+    \label{fig: powerlaw}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Discussion}
+    
+Logarithmic spacing of frequency bands arises naturally from the hierarchical envelope encoding scheme in which a faster oscillation is modulated by progressively slower oscillations, each defining a new layer in the modulation hierarchy. This structure generates a sequence of sidebands that must be spaced in such a way that they do not overlap. To prevent this overlap, the carrier frequencies must be spaced geometrically, leading to logarithmic spacing. This arrangement, often referred to as constant-Q or wavelet-like, ensures that each modulating layer occupies a distinct frequency range without interfering with the others. The frequency bands of these modulations naturally follow a geometric progression, ensuring that higher-frequency layers are well-separated from the lower layers. This temporal hierarchy in modulation gives rise to discrete frequency bands that allow for efficient multiplexing of information, with each band dedicated to processing information at a specific timescale.
+
+On the other hand, power-law scaling in spectral analysis emerges from spatial hierarchies in neural or networked systems. In these systems, small, fine-grained oscillatory signals in local cortical columns (or microcircuits) correspond to higher frequencies, while larger-scale networks synchronize at lower frequencies. The collective activity of many such networks results in a broad distribution of power across a continuous spectrum, often following a 1/f or 1/f\(^\alpha\) distribution. This scaling of power with frequency reflects the phenomenon of coherent summation, similar to how radar systems sum scattered signals. When large numbers of phase-locked oscillations combine over a wide spatial scale, the power at lower frequencies dominates. This power-law behavior is partly due to  the spatial distribution of synchrony across large cortical patches, with the lower frequencies encoding more coarse, long-range interactions, and higher frequencies representing more local and finer-grained processes.
+
+Here, we have shown that it is also a natural property of hierarchical amplitude modulation information encoding.
+
+Although both logarithmic spacing and power-law spectral features are linked to scale invariance, they are distinct phenomena. Logarithmic spacing is primarily a consequence of the hierarchical temporal encoding scheme, where modulation layers must be spaced geometrically to prevent overlap. In contrast, power-law scaling  in electrophysiology arises from  both HAM and from the spatial organization of neural networks and the coherent summation of signal across different spatial scales. 
+
+The two phenomena do not automatically imply one another but can coexist in biological systems. Logarithmic spacing organizes the frequency bands for distinct modulations, while power-law scaling captures the continuous distribution of power across frequencies as a result of networked, hierarchical spatial processes.
+
+In neural systems, both of these phenomena are often observed together. Discrete, log-spaced frequency bands are seen in the spectral organization of oscillatory activity (e.g., delta, theta, alpha, gamma bands), while the overall power spectrum outside these bands may follow a 1/f-like distribution. The coexistence of these two aspects is not coincidental; the hierarchical modulation scheme with log-spaced frequency bands allows for a clean separation of oscillatory signals, while the spatial summation of signals from large, distributed networks gives rise to the broad, power-law scaling observed in mesoscopic and macroscopic electrophysiological recordings. These distinct but complementary mechanisms illustrate how temporal and spatial hierarchies in neural systems contribute to the organization and power distribution of neural activity.
+
+Related to this work, recently proposed models such as Spectral Amplitude Modulation Phase Hierarchy (S-AMPH) bridge acoustic signal processing with neural encoding principles, revealing how hierarchical AM patterns are transduced into phase-synchronized population codes. While hierarchical amplitude modulation models \cite{daikokuHierarchicalAmplitudeModulation2022} and amplitude modulation phase hierarchy approaches \cite{goswamiSpeechRhythmLanguage2019} share the core concept of nested amplitude envelopes across multiple frequency bands, it is crucial to distinguish their specific domains of application. In particular, many schemes inspired by the amplitude modulation phase hierarchy are primarily oriented toward explaining how speech signals are parsed and segmented via cross-frequency coupling in auditory/language processing networks. By contrast, the framework employed here emphasizes a more general neural encoding perspective, where hierarchical amplitude modulation underpins the organization and coordination of oscillatory activity across cortical layers, regardless of stimulus modality, e.g., in including the visual system \cite{bonnefondVisualProcessingHierarchical2024}. This distinction underscores the flexibility and breadth of nested modulation principles: they can be leveraged both in domain-specific contexts such as speech segmentation and in broader neural circuitry models aimed at understanding fundamental coding mechanisms in the brain.  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+Summary of key findings. Future directions for research. Potential clinical applications and implications.
+
+
+
+\section*{Funding}
+  Giulio Ruffini and Francesca Castaldo are funded by the European Commission under European Union’s Horizon 2020 research and innovation programme Grant Number 101017716 (Neurotwin) and European Research Council (ERC Synergy Galvani) under the European Union’s Horizon 2020 research and innovation program Grant Number~855109. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{References}
+
+\bibliographystyle{unsrt}
+
+\bibliography{references}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%% A P P E N D I X %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\clearpage
+\appendix
+ \section{Hierarchical Neural Encoding in the Brain}
+\label{sec:hierachical}
+ %\section{Alternative Introduction}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{Background and Motivation}
+% Predictive coding has become a central framework for understanding neural processing, under the tenet that the brain continuously generates predictions about incoming sensory data and updates these predictions in response to mismatches or prediction errors \cite{raoPredictiveCodingVisual1999,fristonPredictiveCodingFreeenergy2009}. In the context of active inference (AIF), predictive coding serves as the computational foundation where the brain minimizes free energy through a hierarchical exchange of top-down predictions and bottom-up prediction errors \cite{fristonFreeEnergyPrinciple2006,parr2022active}. Kolmogorov Theory (KT) naturally embeds this framework in  Algorithmic Information Theory (AIT), where algorithmic agents optimize predictions by finding short, efficient models of the world \cite{ruffiniInformationComplexityBrains2007, ruffiniRealitySimplicity2009, ruffiniModelsNetworksAlgorithmic2016,Ruffini2017-zv, ruffiniAITFoundationsStructured2022,ruffiniAlgorithmicAgentPerspective2024,ruffiniStructuredDynamicsAlgorithmic2025}.
+
+% Although the predictive biological brain operates as a putative analog computational system, seemingly distant from the algorithmic digital agents described in KT, these paradigms are closely related. Both the brain and algorithmic agents aim to model and track the world harvesting and processing information, a process that fundamentally relies on computing prediction errors of sensory inputs to update internal representations.  
+
+% Crucially, predictive coding theories require a notion of information. Several proposals have been made regarding the encoding framework in neural signals.
+
+
+
+% In this paper, we define a \textit{hierachical information encoding framework }inspired by AM radio and extended to afford hierarchical encoding across timescales and focus on the natural mechanisms by which prediction errors are realized,   identifying neural substrates and oscillatory patterns that may instantiate the Comparator function.
+
+
+ 
+% %%%%%%%%%%%%%%%%%%%
+
+
+ 
+
+
+ 
+
+ 
+ 
+%  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The role of fast and slow oscillations}
+Cross-frequency phase-amplitude coupling between gamma and other rhythms within the same and different brain regions has been well documented, including modulation by theta, alpha, spindle, slow, and ultraslow oscillations \cite{buzsakiMechanismsGammaOscillations2012}. This modulation often occurs via phase-amplitude coupling, where the phase of a slow oscillation influences the amplitude of a faster oscillations \cite{buzsakiRhythmsBrain2006}.
+Gamma oscillations, occurring at frequencies between 30--100 Hz, play crucial roles in various brain functions. They are essential for integrating information within neural circuits, supporting complex processes such as perception, cognition, and memory \cite{buzsakiMechanismsGammaOscillations2012, jensenHumanGammafrequencyOscillations2007, friesNeuronalGammabandSynchronization2009}. In the motor cortex, gamma oscillations are linked with movement and learning, where they enhance motor control and skill acquisition \cite{nowakMotorCorticalGamma2018}. 
+Gamma oscillations also facilitate the binding of perceptual features in the cortex, as well as the integration of diverse information in the hippocampus, contributing to episodic memory formation and retrieval \cite{nyhusFunctionalRoleGamma2010}. Disruptions in gamma rhythms have been associated with neurological and psychiatric disorders, including schizophrenia, Alzheimer's disease, and Parkinson's disease \cite{shinGammaOscillationSchizophrenia2011, guanRoleGammaOscillations2022}. The network of inhibitory interneurons is critical for generating gamma oscillations, and disturbances within this network can lead to pathological conditions \cite{guanRoleGammaOscillations2022}.
+Recent studies have explored gamma entrainment through sensory stimulation as a potential therapeutic approach for neuropsychiatric diseases, showing promising avenues for treatment \cite{manippaUpdateUseGamma2022,blackTherapeuticPotentialGamma2024}. As these findings suggest, gamma oscillations are not only fundamental to normal brain function but also present important clinical implications, highlighting the need for further research into gamma-based therapeutic strategies.
+
+Gamma oscillations, particularly in the 30-100 Hz range, are widely proposed as mechanisms for information encoding in the brain. Fries (2009) \cite{friesNeuronalGammabandSynchronization2009} suggests that gamma-band synchronization allows for \textit{communication through coherence}, aligning excitability phases across neural populations to enhance selective information routing and integration between cortical areas. This alignment is thought to provide a temporal framework within which neural populations can encode and transfer information efficiently. Singer and Gray (1995) \cite{singerVisualFeatureIntegration1995} proposed that gamma oscillations play a crucial role in \textit{feature binding}, encoding sensory information by synchronizing distributed neural assemblies, effectively linking spatially separated representations into coherent perceptual constructs. Jensen et al. (2007) \cite{jensenHumanGammafrequencyOscillations2007} further emphasized gamma oscillations as \textit{carriers of task-relevant information} across neural networks, particularly in contexts involving attention and working memory. By selectively amplifying specific representations, gamma rhythms enhance signal-to-noise ratios, facilitating the encoding and prioritization of important information. These studies collectively underscore gamma oscillations as essential temporal structures for dynamic encoding, enabling effective communication and information processing across brain networks.  
+
+Results in recent animal studies suggest that unpredicted stimuli—i.e. “deviants” in an oddball paradigm—evoked robust responses in supragranular layer 2/3, arising after 100-ms post-stimulus, with processing of contextually deviant stimuli in the oddball paradigm involving increases in theta- and gamma-band oscillations in layer 2/3 \cite{gallimoreSpatiotemporalDynamicsVisual2023}. These frequency bands and this layer of cortex are believed to carryout feed-forward processing, which is consistent with deviance detection reflecting a “prediction error” that is fed-forward in cortical circuits. 
+In summary, gamma rhythms are fundamental carriers of information in the brain with a central multifunctional role in neural systems for perception, selective attention, memory, motivation, and behavioral control \cite{bosmanFunctionsGammabandSynchronization2014}.
+
+%\subsection{Alpha and theta}
+Alpha (8–12 Hz) and theta (4–8 Hz) oscillations have been associated with distinct but complementary roles in neural processing. Alpha rhythms are primarily linked to inhibition and attentional gating, where increased alpha power helps to filter out irrelevant sensory information by suppressing activity in areas not directly involved in a task, thus aiding selective attention \cite{klimeschEEGAlphaOscillations2007,jensenShapingFunctionalArchitecture2010}. This inhibitory function allows alpha to act as a ``gate" in sensory processing areas, modulating cortical activity and stabilizing cognitive processing \cite{hanslmayrRoleOscillationsTemporal2011}. In contrast, theta oscillations are closely tied to cognitive control, working memory, and inter-regional synchronization, particularly within frontal-midline regions during tasks requiring sustained attention and decision-making \cite{klimeschEEGAlphaTheta1999,sederbergThetaGammaOscillations2003,voytekShiftsGammaPhase2010}.
+Furthermore, gamma-oscillations propagate in the feedforward direction, whereas alpha-oscillations propagate in the feedback direction \cite{kerkoerleAlphaGammaOscillations2014}.
+Recent studies have explored how predictions are encoded in neural oscillations, particularly in the alpha and beta frequency bands. Alpha oscillations have been found to carry stimulus-specific visual predictions before stimulus onset, influencing subsequent perceptual performance  \cite{hetenyiPrestimulusAlphaOscillations2024a}. Similarly, alpha/low-beta oscillations in the occipital cortex have been shown to predictively encode the position of moving stimuli, supporting the view of these rhythms as a spectral ``fingerprint" of hierarchical predictive processing \cite{turnerVisualInformationPredictively2023}. Prestimulus alpha oscillations in multisensory networks representing grapheme/phoneme associations increase with predictions and correlate with early sensory component amplitudes, suggesting a role in selective amplification of predicted information \cite{mayerExpectingSeeLetter2016}.
+
+Similarly,  theta’s role in cross-frequency coupling, especially phase-amplitude coupling (PAC) with gamma oscillations, enables it to organize and integrate information across neural networks \cite{lismanThetaGammaNeuralCode2013}.
+
+Theta and gamma oscillations PAC, where the phase of the slower theta oscillation (4–8 Hz) modulates the amplitude—specifically, the envelope—of the faster gamma oscillation (30–80 Hz). In PAC, the gamma envelope, representing the overall magnitude or intensity of the gamma signal, waxes and wanes in sync with the theta phase, creating a coupling that helps encode and structure complex information, such as the rhythmic and phonemic components of speech \cite{scheffer-teixeiraCrossfrequencyPhasephaseCoupling2016}. This coupling enables theta oscillations to segment speech into syllabic units, while the gamma envelope encodes finer details within each segment, supporting hierarchical language processing \cite{giraudCorticalOscillationsSpeech2012}.
+
+EEG and MEG studies show that during selective listening, low-frequency cortical responses in the delta (1–3 Hz) and theta (3–7 Hz) bands preferentially track the temporal envelope of attended speech, allowing the brain to selectively tune into relevant auditory information \cite{dingNeuralCodingContinuous2012,osullivanAttentionalSelectionCocktail2015}. ECoG studies further reveal that the slowly varying envelopes of high-frequency responses in the high-gamma range (>70 Hz) also track attended speech, highlighting the role of high-gamma power in auditory attention \cite{mesgaraniSelectiveCorticalRepresentation2012,golumbicMechanismsUnderlyingSelective2013}. In particular, in \cite{golumbicMechanismsUnderlyingSelective2013}, brain activity is seen to dynamically track speech streams using both low-frequency phase and high-frequency amplitude fluctuations
+
+
+In Viswanathan (2019) \cite{viswanathanElectroencephalographicSignaturesNeural2019}, a key focus was on feature selection in neural signal processing, specifically in the context of selective attention to auditory stimuli. They reported that for low-frequency bands (delta, theta, alpha, and beta), the filtered EEG signal itself was treated as a feature. However, for higher-frequency gamma bands, they used only the amplitude envelopes as features and discarded phase information, a decision inspired by findings from electrocorticography (ECoG) studies indicating that high-gamma amplitude envelopes track attended speech selectively over ignored speech  \cite{mesgaraniSelectiveCorticalRepresentation2012,golumbicMechanismsUnderlyingSelective2013}.
+
+Furthermore, for the alpha (8–12 Hz) and beta (12–30 Hz) bands, Viswanathan included the amplitude envelopes as additional features separate from the filtered EEG signal. This choice was motivated by evidence that alpha power fluctuates coherently with attended stimuli (Wöstmann et al., 2016) and that beta power varies systematically with task demands across a range of cognitive and motor tasks (Engel and Fries, 2010). By incorporating both filtered signals and amplitude envelopes in these bands, Viswanathan aimed to capture both the steady-state and fluctuating attentional effects within the neural data, supporting a richer, more nuanced understanding of the neural correlates of selective auditory attention.
+
+This feature selection approach, outlined by Viswanathan (2019), includes treating the filtered EEG signal in delta, theta, alpha, and beta bands as a feature while using only the amplitude envelope for higher-frequency gamma bands, motivated by findings from ECoG studies. In the alpha (8–12 Hz) and beta (12–30 Hz) bands, both the filtered signal and the amplitude envelope are considered, as alpha power coheres with attentional focus (Wöstmann et al., 2016), and beta-band power varies across cognitive and motor tasks (Engel and Fries, 2010). Wöstmann et al. (2021) further show that alpha oscillations serve a dual role as a spatio-temporal attentional filter: alpha power lateralizes with spatial attention, increasing in the hemisphere ipsilateral to the attended side and decreasing in the contralateral hemisphere. This lateralization can be temporally modulated, as demonstrated by MEG recordings where alpha power lateralization was stronger for spatially attended cues when participants had foreknowledge of a target’s timing. The lateralization precisely at temporally cued onsets of attended numbers indicates alpha’s role in dynamically filtering spatial and temporal attention to optimize perceptual performance.
+
+
+Together, alpha and theta rhythms create a dynamic balance between local inhibition and long-range coordination, supporting efficient neural processing and flexible cognitive functioning across various demands \cite{kaplanMedialPrefrontalTheta2014, friesRhythmsCognitionCommunication2015}.
+
+
+We previously introduced a laminar neural mass model (LaNMM) designed to capture both superficial-layer fast and deeper-layer slow oscillations along with their interactions, such as phase-amplitude coupling (PAC) and amplitude-amplitude anticorrelation (AAC)\cite{sanchez-todo_physical_2023}. The spectrolaminar motif is ubiquitous across the primate cortex \cite{mendoza-hallidayUbiquitousSpectrolaminarMotif2024}.  This framework allows for a dynamic instantiation of the Comparator, facilitating the analysis of how prediction errors and top-down predictions may be performed across different cortical depths. LaNMM combines conduction physics with neural mass models (NMMs) to simulate depth-resolved electrophysiology. Cortical function emerges from multi-scale networks, and NMMs provide a high-level representation of the mean activity of large neuronal populations. LaNMM builds on this by incorporating realistic conduction properties, enabling a detailed simulation of how slow and fast oscillatory sources interact across layers.
+By applying LaNMM to laminar recordings from the macaque prefrontal cortex, we generated a minimal model capable of reproducing coupled oscillations across layers. This allowed us to optimize LaNMM parameters to match functional connectivity (FC) patterns derived from empirical data. Here, FC was defined by the covariance between bipolar voltage measurements across cortical depths, with optimal configurations reproducing observed FC patterns, specifically generating fast activity in superficial layers and slow oscillations across deeper layers.
+This framework not only aligns with recent findings in cortical oscillatory dynamics but also offers a practical platform for investigating the role of the Comparator. By analyzing the PAC and AAC patterns in LaNMM simulations, we gain insight into how fast and slow oscillatory interactions may underpin prediction error generation, routing, and inhibition in hierarchical cortical processing.
+
+LaNMM fits comfortably in the context of hierarchical processing and predictive coding. There exist clear asymmetries in hierarchical cortical connectivity, particularly in the distinct roles of feedforward (FF) and feedback (FB) pathways in sensory processing  \cite{bastosDCMStudySpectral2015}.    Anatomical studies established that FF pathways typically originate from superficial layers and project to granular layers, while FB pathways arise from deeper layers, connecting to non-granular areas, supporting a hierarchical processing model. This anatomical arrangement is reflected physiologically: FF pathways exhibit strong excitatory signals, using ionotropic receptors, while FB pathways are more modulatory, involving both ionotropic and metabotropic receptors and acting at dendritic arbors.  Functionally, FF and FB connections also differ in frequency domains. FF signals often use gamma-band frequencies and are associated with prediction error transmission, while FB signals utilize lower alpha and beta frequencies, hypothesized to convey predictions and aligning with predictive coding models. In this framework, FF connections deliver prediction errors to higher-order areas, while FB signals transmit top-down predictions to explain sensory input. Experimental studies support this model, showing that gamma coherence is stronger in FF pathways, while alpha/beta coherence is more prominent in    FB pathways, suggesting a mechanism where faster frequencies convey discrepancies and slower frequencies signal model-driven predictions \cite{bastosDCMStudySpectral2015}. Finally, in hierarchical processing, the selection of ascending information by adjusting the ‘volume’ or gain of prediction errors that compete for influence over higher levels of processing \cite{fristonLFPOscillationsWhat2015}. 
+
+
+\subsection{General model for information  encoding and processing}
+In digital communication systems, information is usually represented as a sequence of binary digits (0’s and 1’s). The physical encoding, transportation, and processing of information in computers are achieved through the manipulation of electrical currents within transistors. These components leverage semiconductor properties to control current flow, thereby enabling the execution of complex computational tasks. However, in analog systems and biological networks, information is conveyed through continuous signals. Amplitude modulation (AM) radio is a classic example, where information is encoded in the amplitude envelope of a high-frequency carrier wave. Similarly, in neural systems, the amplitude envelope of oscillatory activity can carry meaningful information.  In the framework of the brain as an oscillatory computational system, information may be encoded in different ways, for example, in the power, envelope, or phase \cite{buzsakiNeuronalOscillationsCortical2004} of signals. More generally, we may think of information as encoded by the signal themselves (not some features of it), just as audio waves encode information. There is evidence that slow-wave signals encode information in this manner, with high gamma-band activities exhibiting amplitude-modulation at the same rate as the stimulus envelope of speech  \cite{tamuraCorticalRepresentationSpeech2023}.  The seminal study by Pasley et al. (2012) \cite{pasleyReconstructingSpeechHuman2012} successfully reconstructed speech by decoding the high gamma power envelope from ECoG recordings and mapping it to the spectrogram of the speech signal. The high gamma envelope was crucial because it tracked the amplitude and rhythm of the speech signal closely, allowing the researchers to recreate a spectrogram that could then be transformed back into an audible approximation of the original speech.
+This  demonstrated that gamma-band activity in the auditory cortex contains rich, temporally precise information about the auditory signal, which can be leveraged for reconstructing intelligible sounds.  
+
+
+ 
+
+Crucially, we will consider the idea of coarse-grained multiscale information encoding. %Figure~\ref{fig:multiscale} provides an example of a multi-scale nested signal generated in Python, spanning 6 seconds. The fastest oscillation is a 60 Hz “gamma” carrier, whose amplitude is modulated by a 4 Hz “theta” wave. In turn, the theta wave’s amplitude is further modulated by a 1 Hz low-frequency envelope. This hierarchy illustrates how slower signals can shape the amplitude fluctuations of faster rhythms, reflecting a nested, multiscale structure.
+
+
+
+
+Thus, in our framework, information is not only carried by the raw signal (for instance, an alpha band oscillation) but also by its successively extracted envelopes across multiple time scales. Building on the notion of hierarchical temporal organization in brain signals \cite{penttonenNaturalLogarithmicRelationship2003,buzsakiScalingBrainSize2013} (see Figure~\ref{fig:logarithmic_hierarchy}), we propose that meaningful structure can be revealed when we move from the primary oscillation to its envelope, and then to the envelope of that envelope, and so on. Each “layer” of the envelope captures fluctuations at progressively slower time scales, enabling us to disentangle the nested rhythmic features that are otherwise hidden in the raw signal. In this framework, the laminar model acts as a machine that systematically extracts these envelopes—layer by layer—and compares them, thus exposing the rich, multi-level temporal structure of neural activity. This framework is further discussed below.
+
+ 
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/AM_signals.png}
+ 
+   \caption{\textbf{Amplitude modulation (AM)}, where information is encoded in the envelope of a carrier, as in AM radio.   }
+    \label{fig:AM}
+\end{figure} 
+
+
+
+
+
+
+
+
+ 
+
+ 
+ 
+%  \subsection{Overview of the Proposed Model}
+% In this work, we propose a concrete model that formalizes the above ideas, casting hierarchical amplitude modulation as a unifying principle for cortical predictive coding. The model assumes that information is encoded in a signal by decomposing it into multiple layers: a fast oscillatory component (the carrier), its amplitude envelope, and further nested envelopes of increasing duration. Each layer in this hierarchy corresponds to a level of the brain’s predictive model, with higher-level (slower) signals providing context or predictions that modulate the activity of lower-level (faster) signals. The nested structure inherently yields a set of characteristic frequencies that are geometrically spaced (approximately on a log scale), consistent with observed neural frequency bands and their coupling relationships. We conceptualize local neural circuits as functioning like \textit{modulator-demodulator} units (analogous to electronic modems): a local network (which can be implemented by \textbf{LaNMM}) can impose an amplitude modulation on its outgoing oscillatory activity (embedding high-level information into a carrier), and conversely, can extract (demodulate) the envelope from incoming modulated signals to recover the information carried by the slower fluctuations. Through such modulator-demodulator operations, adjacent levels of the hierarchy communicate predictions and errors without requiring separate point-to-point channels – instead, information is superimposed in the temporal structure of a single composite signal. This provides an efficient coding and transmission scheme, potentially maximizing information throughput while respecting biological constraints on wiring and oscillatory dynamics. In summary, the proposed HAM framework offers a novel perspective on brain function: it integrates predictive coding theory with known oscillatory phenomena by suggesting that the brain encodes their hierarchical predictive model in the form of nested amplitude modulations across distinct frequency bands. The following sections develop the mathematical formulation of this hierarchical modulation model and detail how it can implement predictive coding operations in a principled manner, setting the stage for quantitative analysis and empirical validation.
+
+
+
+\subsection{Neural Coding Schemes: Rate, Temporal, Phase, and Burst Codes}
+
+Neuroscientists have long debated how neurons encode information, contrasting \textbf{rate coding} with various \textbf{temporal coding} strategies. In rate coding, information is carried by a neuron’s average firing rate (spikes per second) over some time window. In contrast, temporal codes rely on the precise timing or patterns of spikes. This includes \textit{spike timing codes} (where the exact millisecond timing or the order of spikes matters) and \textit{synchrony codes} (where coordinated firing across neurons can signal relationships or “binding” of stimulus features). Indeed, an \textit{ongoing debate} asks how much information is conveyed by precise spike timing versus mean firing rates \cite{zeldenrustNeuralCodingBurstsCurrent2018}. Temporal codes can enable extremely rapid information readout -- for example, firing-order or first-spike codes can support fast sensory discriminations that would be too quick for pure rate codes \cite{carianiTimeEssenceNeural2022}. In such schemes, which neurons fire first (and at what millisecond) carries meaning, allowing decisions on the order of tens of milliseconds (as observed in vision and audition).
+
+\textbf{Phase coding} is a special case of temporal coding where spikes convey information by their phase with respect to an ongoing neural oscillation. For instance, hippocampal place cells not only increase firing rate at a particular location (rate code for position), but also fire at progressively earlier phases of the local theta rhythm as an animal moves through the place field. This \textit{phase precession} is thought to provide additional information about position or timing that complements the rate code. More generally, spike timing relative to oscillatory phase can multiplex information: neurons can encode one aspect of a stimulus in their firing rate and another in the phase at which they fire \cite{lismanThetaGammaNeuralCode2013}. Evidence in the hippocampus supports the idea that dual oscillations (theta and gamma) form a \textit{theta--gamma code} for multiple items in sequence -- each theta cycle ($\sim$100 ms) is subdivided into gamma subcycles that represent different pieces of information in an ordered manner \cite{lismanThetaGammaNeuralCode2013}. In this way, phase coding by nested rhythms can create an internal sequencing of information (as seen in spatial navigation and possibly in multi-item working memory).
+
+\textbf{Burst coding} adds another layer to neural encoding. Neurons often fire \textit{bursts} -- brief clusters of spikes -- in addition to isolated spikes. Bursts have been hypothesized to serve distinct functional roles. One view is that bursts simply enhance reliability at synapses: a barrage of spikes in quick succession can overcome synaptic transmission failures. However, bursts might also carry specific information \textit{in their internal structure}. Researchers ask whether the number of spikes in a burst, or the precise inter-spike intervals within a burst, encode unique information beyond a simple “there was a burst” signal \cite{zeldenrustNeuralCodingBurstsCurrent2018}. Recent reviews highlight that bursts \textit{do} convey information and are not only for reliability \cite{zeldenrustNeuralCodingBurstsCurrent2018}. For example, bursts and single spikes may form \textbf{parallel codes} in the same neuron’s output, each relating to different stimulus features \cite{zeldenrustNeuralCodingBurstsCurrent2018}. A burst could represent a slower or more significant event, while single spikes embedded between bursts represent higher-frequency details \cite{zeldenrustNeuralCodingBurstsCurrent2018}. Bursts also have a disproportionate impact on targets -- acting as a “wake-up call” that can reset or enhance responsiveness in downstream neurons \cite{zeldenrustNeuralCodingBurstsCurrent2018}. This has led to the idea that bursts might flag important events (an attentional \textit{“searchlight”} signal \cite{zeldenrustNeuralCodingBurstsCurrent2018}) or indicate the coincidence of multiple inputs (when generated by dendritic spike events \cite{zeldenrustNeuralCodingBurstsCurrent2018}). In summary, contemporary perspectives view neural coding as \textit{multi-faceted}: firing rates, spike timing, phases of oscillations, and bursts all provide complementary channels of information.
+
+\subsection{Oscillations and Information Processing}
+
+Brain oscillations (rhythmic fluctuations of neural activity) are now recognized as central to neural information processing. Oscillations provide a temporal structure -- a scaffold of cycles -- that can organize when neurons fire. One consequence is \textbf{phase-dependent excitability}: the probability or impact of a spike can depend on \textit{when} in an oscillatory cycle it occurs \cite{canoltyFunctionalRoleCrossfrequency2010}. For example, if a neuron is most excitable at the trough of a local field potential oscillation, a spike or input arriving at that phase will be processed more effectively than one arriving at the peak \cite{canoltyFunctionalRoleCrossfrequency2010}. In this way, oscillations can gate information flow by timing it to phases of high responsiveness. Oscillatory synchrony also enables effective communication across brain regions: when groups of neurons oscillate in phase, their spikes arrive at target areas in a coordinated manner, summing to have a larger impact. This is the basis of the \textbf{communication-through-coherence} hypothesis, which proposes that coherence (phase alignment) between sender and receiver neural groups facilitates selective information transmission \cite{friesRhythmsCognitionCommunication2015}. Notably, different frequency bands may subserve different signaling roles. \textbf{Gamma-band (30--100 Hz)} oscillations often reflect local, fast information processing (e.g., encoding sensory details or content), while slower rhythms like \textbf{alpha/beta (8--20 Hz)} can carry top-down influences (e.g., attentional or predictive signals) that modulate the gamma activity \cite{friesRhythmsCognitionCommunication2015}. Indeed, in one model, feed-forward (bottom-up) signals are carried by high-frequency gamma synchrony, whereas feed-back (top-down) signals are conveyed by slower alpha/beta oscillations that can modulate the gamma timing \cite{friesRhythmsCognitionCommunication2015}. Even the theta band ($\sim$4--8 Hz) has been implicated in sampling or sequencing information -- for instance, attention might effectively “sample” inputs at a theta rhythm \cite{friesRhythmsCognitionCommunication2015}. Thus, multiple oscillations interact to make neural communication \textit{effective, precise, and selective} \cite{friesRhythmsCognitionCommunication2015}.
+
+Beyond their role in coordinating timing, oscillations also allow the brain to \textbf{multitask or multiplex} information streams. Because oscillations occur at various frequencies, neural signals can be segregated in the frequency domain. A striking observation is that brain activity organizes into a \textbf{hierarchy of oscillatory bands} -- from slow ($<$1 Hz, delta) up through theta, alpha, beta, gamma, and even faster “ripple” oscillations -- and this hierarchy is preserved across brain regions and species \cite{penttonenNaturalLogarithmicRelationship2003, buzsakiBrainRhythmsNeural2012}. These rhythms are not independent; they \textbf{interact across frequencies}, supporting cross-scale communication. In other words, the brain appears to use a layered timing structure, where slow fluctuations can align or modulate faster ones. This is evident in measures of \textbf{oscillatory amplitude modulation}: for example, the amplitude (power) of a high-frequency gamma oscillation often waxes and wanes in step with the phase of a slower theta wave. Such \textit{phase-amplitude coupling} suggests that slower oscillations can control the gain of faster oscillatory activity. Because slow oscillations tend to involve larger, more distributed networks (operating on behavioral or cognitive timescales), and fast oscillations involve local circuits (processing fine details), their coupling provides a way to bridge \textbf{multiple spatial and temporal scales of processing} \cite{canoltyFunctionalRoleCrossfrequency2010}. In fact, accumulating evidence indicates that information processing in the brain is intrinsically \textbf{multi-scale}, and a \textit{hierarchy of coupled oscillations} is well-suited to regulate this integration across scales \cite{canoltyFunctionalRoleCrossfrequency2010}. Through oscillations, the brain can synchronize distant regions, segment continuous streams into discrete “frames,” and dynamically route signals -- all essential for complex cognitive functions such as attention, memory, and perception [\cite{carianiTimeEssenceNeural2022}.
+
+\subsection{Cross-Frequency Coupling and Nested Hierarchies}
+
+\textbf{Cross-frequency coupling (CFC)} refers to interactions between oscillations at different frequencies, and it is a key mechanism for hierarchical encoding in neural circuits. In nested \textbf{oscillatory hierarchies}, a slower rhythm can organize the occurrence or amplitude of faster rhythms [\cite{buzsakiBrainRhythmsNeural2012}. One well-studied example is theta--gamma coupling: the phase of a 5 Hz theta oscillation modulates the amplitude or timing of $\sim$50 Hz gamma bursts. This nesting effectively creates “packets” of high-frequency activity within each cycle of the slow wave, which can be viewed as a higher-order coding unit. Lisman and colleagues have argued that theta--gamma coupling constitutes a neural code capable of ordering multiple items (as mentioned above for hippocampal sequences) \cite{lismanThetaGammaNeuralCode2013}. More generally, CFC has been observed across many brain areas and frequency combinations, suggesting a \textbf{general hierarchical organization} of brain rhythms \cite{buzsakiBrainRhythmsNeural2012}. The \textbf{strength} of phase-amplitude coupling often reflects behavioral or cognitive states: it varies with task demands and learning, and higher coupling can correlate with better performance \cite{canoltyFunctionalRoleCrossfrequency2010}. For example, during learning tasks, the degree of theta--gamma coupling in relevant circuits changes rapidly with new information and can predict memory retention or decision success \cite{canoltyFunctionalRoleCrossfrequency2010}. In working memory paradigms, stronger coupling between prefrontal low-frequency rhythms and high-frequency activity has been linked to greater memory capacity or focus, implying that coupling helps coordinate the maintenance of multiple items in memory \cite{buzsakiBrainRhythmsNeural2012}. Thus, CFC is not just an epiphenomenon -- it appears to \textbf{serve functional roles} in computation, communication, and plasticity \cite{canoltyFunctionalRoleCrossfrequency2010}.
+
+One way to understand nested oscillations is as a \textbf{layered coding scheme}, akin to a compositional syntax. Just as letters form words and words form sentences, fast oscillatory cycles can be grouped by slower cycles into larger assemblies. Buzs\'aki and colleagues describe this as a potential \textbf{“neural syntax”}, where cross-frequency coupling imposes syntactic rules on neural firing -- i.e., which spike patterns (or gamma bursts) go together in time \cite{buzsakiBrainRhythmsNeural2012}. The slower rhythm provides a reference frame that segments and orders the faster activity, making it easier for downstream “readers” (neuronal targets) to interpret the spikes. In practical terms, if individual spikes or high-frequency bursts are like letters conveying fine details, a slower oscillation can concatenate these into intelligible “words” or “phrases” that carry a compound meaning \cite{buzsakiBrainRhythmsNeural2012}. This hierarchical \textbf{packaging of information} could underlie complex pattern generation and parsing in the brain. Notably, cross-frequency coupling comes in different forms -- not only phase--amplitude (slow phase modulates fast amplitude) but also phase--phase locking (integer frequency relationships) and amplitude--amplitude correlations between bands \cite{buzsakiBrainRhythmsNeural2012}. Each type of coupling might support different computations or interactions. Phase--phase locking (often an $n : m$ frequency relationship) can temporally align neural events across scales (e.g., one gamma burst every cycle of a beta rhythm, etc.), whereas phase--amplitude coupling effectively uses the slow wave as a carrier signal that gates fast content. Across the cortex and hippocampus, virtually all co-occurring rhythms can exhibit CFC \cite{buzsakiBrainRhythmsNeural2012}, indicating \textbf{ubiquitous nesting} from very slow ($<$0.1 Hz) oscillations up to fast ripples ($\sim$150--200 Hz). This nested organization means the brain operates with a deep \textbf{temporal hierarchy}, where higher-order cortical areas or network states (often oscillating slower) can modulate and orchestrate the fine-scale activity of local circuits (oscillating faster). Such dynamics have been hypothesized to support cognitive functions that require integration of information over multiple timescales -- for instance, parsing speech (syllables within words within phrases) or forming episodic memories (encoding sequences of events in order).
+
+\subsection{Integration of Coding Schemes in Hierarchical Layers}
+
+Rather than using any single coding scheme in isolation, neural systems likely \textbf{integrate multiple codes} that interact across layers of processing. An emerging view is that the brain multiplexes information much like a communication system, using different “channels” (whether defined by neuron populations, time windows, or frequency bands) to carry different aspects of information simultaneously [\cite{carianiTimeEssenceNeural2022} L159-L167]. The architecture of the brain -- with its layered cortex and recurrent loops -- supports such parallel and hierarchical coding. For example, a single neuron could use a combination of rate and temporal codes: it might increase firing rate to signal the intensity of a stimulus, while the precise spike timing relative to a network oscillation conveys qualitative information about that stimulus. Similarly, as mentioned, \textbf{single spikes vs. bursts} from the same cell may form a dual code \cite{zeldenrustNeuralCodingBurstsCurrent2018}. Experimental evidence in sensory systems shows that bursts often code for \textit{slow} or context features, whereas isolated spikes code for \textit{rapid detail} features, effectively splitting the information stream by timescale \cite{zeldenrustNeuralCodingBurstsCurrent2018}. This can be seen as a form of \textbf{time-division multiplexing} -- using the timing pattern of spikes (clustered vs.\ singular) to send two messages on one output line.
+
+At the network level, oscillations of different frequencies provide distinct \textbf{communication channels} that can operate concurrently. This resembles \textbf{frequency-division multiplexing} in engineered systems: distinct frequency bands can carry separate streams without interference \cite{carianiTimeEssenceNeural2022}. Brain rhythms might dynamically assign certain computations to gamma band activity and others to beta or theta bands, all happening in parallel. Critically, these channels are not independent; they \textbf{interact} to ensure the streams are recombined appropriately for unified perception and behavior. The interplay of gamma, beta, alpha, theta, etc., can thus implement a layered processing hierarchy. For instance, in attention and perception, \textbf{fast gamma oscillations} in visual cortex can encode the features of a currently attended object, while \textbf{alpha oscillations} regulate the timing of these gamma bursts and segregate other objects in the scene by suppressing or desynchronizing their gamma activity. A recent framework for visual attention proposes exactly this kind of hierarchical multiplexing: different elements of an object are processed in separate high-frequency bursts (gamma) \textit{within} a single cycle of an alpha rhythm, ensuring they are bound together as one object, whereas different objects are processed in successive alpha cycles (thereby kept separate in time) \cite{bonnefondVisualProcessingHierarchical2024}. Furthermore, even slower oscillations like theta (perhaps tied to eye movements or attentional shifts) could align these alpha cycles when scanning a scene \cite{bonnefondVisualProcessingHierarchical2024}. This \textbf{nested multiplexing} idea illustrates how multiple encoding schemes (phase coding, bursting, oscillatory gating) can dovetail: a slow rhythm sets up a temporal frame for each object (like a “time slot”), within which rapid bursts encode the object’s features by phase coding along the alpha cycle \cite{bonnefondVisualProcessingHierarchical2024}. Such a system is flexible and hierarchical -- akin to a multi-layer computer architecture where signals are modulated and demodulated across different layers of a network.
+
+From a theoretical standpoint, researchers have drawn analogies between neural coding and the layered protocols of communication systems. Cariani and others suggest that the brain might implement forms of \textbf{time-division, frequency-division, and code-division multiplexing} to handle the immense complexity of information it processes \cite{carianiTimeEssenceNeural2022}. In this view, neural oscillations and precisely timed spike patterns act like carriers and modulators, allowing neurons to \textbf{broadcast multiplexed, temporally-patterned signals} that can be selectively read by receivers tuned to the appropriate timing or frequency \cite{carianiTimeEssenceNeural2022}. Just as radio transmitters broadcast at different frequencies to avoid mutual interference, different neural assemblies might oscillate at distinct frequencies to avoid cross-talk and then use moments of synchrony (phase alignment) to communicate when needed. The concept of \textbf{polychronous ensembles} is another example of a layered temporal code: Izhikevich and colleagues proposed that neurons with specific axonal conduction delays can fire in reproducible spatiotemporal patterns (with precise delays between spikes across neurons), creating a high-dimensional coding space for patterns (a form of \textit{time-offset code}). These ensembles can be active in overlapping ways as long as their spike timing patterns differ, analogous to code-division multiplexing. Such polychronous firing patterns essentially embed a hidden layer of temporal code that only a circuit with matching delay properties could interpret -- hinting at a kind of combinatorial coding that goes beyond simple rate or synchrony. While experimental evidence for polychronization is still emerging, it aligns with the broader idea that \textbf{neuronal networks exploit temporal diversity for coding capacity}.
+
+In summary, modern perspectives conceive of neural encoding as inherently \textbf{hierarchical and multi-layered}. Low-level neural events (spikes) are organized in time by intermediate patterns (bursts, synchrony, phase-locking), which are further structured by emergent global rhythms (oscillations, couplings). This layered structure allows the nervous system to encode \textbf{multiple features and contexts simultaneously} and to flexibly route information as task demands change. The interplay of different codes -- rate, temporal, phase, and bursts -- in a hierarchical manner enables something analogous to a \textbf{neural information architecture}. It ensures that local details and global context are integrated, much like how, in a computer, bits are organized into bytes, packets, and higher-level data structures. Crucially, a growing body of theoretical models and empirical data supports this view. We see evidence from hippocampal theta--gamma coding of sequences \cite{lismanThetaGammaNeuralCode2013}, to cross-frequency coupling correlating with learning and memory performance \cite{canoltyFunctionalRoleCrossfrequency2010,buzsakiBrainRhythmsNeural2012}, to human neuroimaging studies showing nested oscillations tracking multi-level linguistic structures during speech comprehension \textsuperscript{\dag}. All of these findings converge on the idea that \textbf{neuronal information is encoded across multiple temporal scales} in a coordinated fashion. This hierarchical encoding may be fundamental to how the brain achieves efficient, robust, and context-sensitive computation. 
+
+
+
+\subsection{PEIX: A Normalized Slope Measure of Excitation–Inhibition Balance}
+\label{sec:PEIX}
+\newcommand{\peix}{\mathrel{\raisebox{-0.1ex}{\scalebox{1.5}{\reflectbox{$\propto$}}}}}
+
+Neural populations are often modeled by a sigmoid function,
+\[
+S(V) = \frac{2e_0}{1+\exp\big(r(V_0-V)\big)},
+\]
+where \(V_0\) is the half-maximum potential (the linear operating point), \(e_0\) is the maximum firing rate, and \(r\) sets the slope. The derivative,
+\[
+S'(V) = \frac{2e_0\, r\,\exp\big(r(V_0-V)\big)}{\Bigl(1+\exp\big(r(V_0-V)\big)\Bigr)^2},
+\]
+peaks at \(V=V_0\) with \(S'(V_0)=\frac{e_0r}{2}\) and decreases as the system enters its excitatory (\(V \gg V_0\)) or inhibitory (\(V \ll V_0\)) saturation regimes.
+
+To quantify the deviation from the ideal linear regime, we define the dimensionless variable
+\[
+x = r\big(\langle V\rangle - V_0\big),
+\]
+where \(\langle V\rangle\) is the average membrane potential. By normalizing the local slope \(S'(V)\) with its maximum value at \(V_0\), we obtain a measure of nonlinearity that distinguishes between excitation and inhibition. The \textbf{Population Excitation-Inhibition Index (PEIX)} is defined as
+\[
+\peix(x) = -\operatorname{sign}(x) \left(\frac{4\,\exp(-x)}{\Bigl(1+\exp(-x)\Bigr)^2} - 1\right).
+\]
+This formulation ensures that:
+\begin{itemize}
+    \item \(\peix(x) \approx 0\) when \(\langle V\rangle \approx V_0\) (linear regime),
+    \item \(\peix(x) > 0\) when \(\langle V\rangle > V_0\) (excitatory state),
+    \item \(\peix(x) < 0\) when \(\langle V\rangle < V_0\) (inhibitory state),
+    \item \(|\peix(x)| \approx 1\) in the saturated regimes.
+\end{itemize}
+Thus, by focusing on the normalized slope of the sigmoid, PEIX provides a compact, dimensionless index of both the deviation from the optimal operating point and the underlying excitation–inhibition balance.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+
+
+\section{Comparator (Innovation) Role in a Hierarchical Kalman Filter}
+
+A standard Kalman filter is a sequential algorithm for estimating a hidden state 
+$\mathbf{x}_k$ of a system at each discrete time step $k$. 
+It operates in two main steps:
+
+\begin{enumerate}
+    \item \textbf{Prediction:} Use the previous state estimate and the system model to 
+    predict the next state.
+    \item \textbf{Update:} Incorporate new measurements to correct the predicted state, 
+    guided by the \emph{innovation} (or \emph{comparator output}), which is the discrepancy 
+    between predicted and observed measurements.
+\end{enumerate}
+
+\paragraph{Standard Formulation.}
+We typically assume a linear state-space model:
+\[
+\begin{cases}
+\mathbf{x}_k \;=\; \mathbf{A}_k\,\mathbf{x}_{k-1} + \mathbf{B}_k\,\mathbf{u}_{k-1} + \mathbf{w}_{k-1},\\
+\mathbf{z}_k \;=\; \mathbf{H}_k\,\mathbf{x}_k + \mathbf{v}_k,
+\end{cases}
+\]
+where $\mathbf{x}_k$ is the state at time $k$, $\mathbf{u}_k$ is a known control input, 
+and $\mathbf{z}_k$ is the measurement at time $k$. The matrices 
+$\mathbf{A}_k$, $\mathbf{B}_k$, and $\mathbf{H}_k$ define how the system evolves and 
+how measurements map from the state. The noise terms $\mathbf{w}_{k-1}$ and $\mathbf{v}_k$ 
+represent process and measurement noise, respectively, with covariances 
+$\mathbf{Q}_{k-1}$ and $\mathbf{R}_k$.
+
+At each step $k$, the filter does:
+
+\[
+\textbf{(1) Prediction Step:}
+\quad
+\begin{cases}
+\mathbf{x}_{k}^{\mathrm{pred}} \;=\; \mathbf{A}_k\,\mathbf{x}_{k-1}^{\mathrm{upd}}
+\;+\; \mathbf{B}_k\,\mathbf{u}_{k-1},\\
+\mathbf{P}_{k}^{\mathrm{pred}} \;=\; \mathbf{A}_k\,\mathbf{P}_{k-1}^{\mathrm{upd}}\,\mathbf{A}_k^{T}
+\;+\; \mathbf{Q}_{k-1},
+\end{cases}
+\]
+where $\mathbf{x}_{k}^{\mathrm{pred}}$ and $\mathbf{P}_{k}^{\mathrm{pred}}$ are the 
+\emph{predicted} state and its error covariance, respectively. They depend only on 
+information up to time $k-1$.
+
+\[
+\textbf{(2) Innovation (Comparator) Output:}
+\quad
+\boldsymbol{\nu}_k \;=\; \mathbf{z}_k \;-\; \mathbf{H}_k\,\mathbf{x}_{k}^{\mathrm{pred}}.
+\]
+This quantity $\boldsymbol{\nu}_k$ is the \emph{difference} between the 
+\emph{predicted measurement} $\mathbf{H}_k\,\mathbf{x}_{k}^{\mathrm{pred}}$ 
+and the \emph{actual} measurement $\mathbf{z}_k$; a large discrepancy indicates 
+a large prediction error.
+
+\[
+\textbf{(3) Kalman Gain:}
+\quad
+\mathbf{K}_k \;=\; \mathbf{P}_{k}^{\mathrm{pred}}\,\mathbf{H}_k^{T}\,
+\Bigl(\mathbf{H}_k\,\mathbf{P}_{k}^{\mathrm{pred}}\,\mathbf{H}_k^{T} + \mathbf{R}_k\Bigr)^{-1}.
+\]
+\[
+\textbf{(4) Update Step:}
+\quad
+\begin{cases}
+\mathbf{x}_{k}^{\mathrm{upd}} \;=\; \mathbf{x}_{k}^{\mathrm{pred}} + \mathbf{K}_k\,\boldsymbol{\nu}_k,\\[4pt]
+\mathbf{P}_{k}^{\mathrm{upd}} \;=\; \bigl(\mathbf{I} - \mathbf{K}_k\,\mathbf{H}_k\bigr)\,\mathbf{P}_{k}^{\mathrm{pred}}.
+\end{cases}
+\]
+Hence, $\mathbf{x}_{k}^{\mathrm{upd}}$ and $\mathbf{P}_{k}^{\mathrm{upd}}$ become the \emph{posterior} 
+(or “corrected”) estimates at time $k$, which are then used to \emph{predict} time $k+1$ in the same fashion.
+
+\medskip
+
+\paragraph{Hierarchical Extension.}
+In this work, we adopt a \emph{hierarchical} perspective akin to multi-scale or 
+multi-layer processing: rather than applying the Kalman filter to a single timescale, 
+we apply a version at \emph{each} level in a cortical hierarchy (or each frequency 
+band/envelope). In particular:
+
+\begin{figure} [t]
+    \centering
+    \includegraphics[width=0.99\linewidth]{figures/collisions.png}
+    \caption{Sequential filtering.}
+    \label{fig:collisions}
+\end{figure}
+
+
+\begin{itemize}
+\item \textbf{Coarse-Grained Predictions.} 
+  At each layer, the state $\mathbf{x}_{k}^{(\ell)}$ represents coarser features of the 
+  signal (e.g., slower dynamics or envelope information). The update aims to cancel out 
+  prediction error \emph{at that layer’s timescale}.
+\item \textbf{Comparator Mechanism.} 
+  Each layer receives an “incoming observation” $\mathbf{z}_{k}^{(\ell)}$ (potentially 
+  derived from the layer below) and compares it to the \emph{layer’s own} predicted 
+  measurement $\mathbf{H}^{(\ell)}\mathbf{x}_{k}^{(\ell), \mathrm{pred}}$. This 
+  innovation drives the layer-specific correction.
+\item \textbf{Up/Down Interactions.} 
+  Higher layers process information at lower temporal frequencies (or coarser resolution), 
+  while lower layers operate at finer scales. The mismatch (innovation) at each level 
+  feeds back to refine predictions at that level and potentially provides feedback to 
+  adjacent layers.
+\end{itemize}
+
+Thus, although the \emph{mathematical} form of each layer’s filter update appears similar 
+to a standard Kalman filter, the \textbf{intent} and \textbf{information flow} differ: 
+\emph{each layer’s comparator “kills the error” at its own spatiotemporal granularity.} 
+In neural terms, we could interpret this as a hierarchy of cortical areas, each predicting 
+the activity (or envelopes) in the layer below, with the local “innovation” indicating the 
+prediction error that drives learning or adjustment across layers. 
+This multi-level scheme helps the system track and predict signals with \emph{layer-specific} 
+dynamics and noise characteristics, rather than a single Kalman filter struggling with 
+all temporal scales at once.
+
+
+\textbf{Kalman Filtering and Active Inference: A Least-Squares Perspective}
+
+\textbf{1. Kalman Filter in Least-Squares Form}
+
+Assumptions: We consider a linear state-space model with Gaussian noise. Let $x_k$ be the hidden state at time $k$, and $y_k$ the observation. The dynamics are $x_k = A,x_{k-1} + w_k$ and the observation model $y_k = H,x_k + v_k$, where $w_k \sim \mathcal{N}(0, Q)$ and $v_k \sim \mathcal{N}(0, R)$ are process and measurement noise (zero-mean Gaussian) with covariances $Q$ and $R$. The goal is to estimate $x_k$ given observations up to time $k$.
+
+Least-squares cost function: Under these linear Gaussian assumptions, the maximum a posteriori (MAP) estimate of $x_k$ (which coincides with the minimum mean-square error estimate for Gaussian noise) can be obtained by minimizing a weighted least-squares cost.  Intuitively, we want $x_k$ to be close to the prior prediction $x_{k|k-1}$ (the predicted state from time $k-1$) and also close to the value that explains the new observation $y_k$. This leads to the cost function:
+
+$$
+J(x_k) = \underbrace{(x_k - \hat{x}{k|k-1})^T P{k|k-1}^{-1}(x_k - \hat{x}{k|k-1})}{\text{distance from prior (prediction error)}} ;+;
+$$
+$$ \underbrace{(y_k - H,x_k)^T R^{-1}(y_k - H,x_k)}_{\text{distance from measurement (observation error)}},
+$$
+
+where $\hat{x}{k|k-1}$ is the prior state estimate (prediction) and $P{k|k-1}$ its covariance. The first term is the squared prediction error (the difference between $x_k$ and the predicted state) weighted by the inverse of the prior covariance (the precision of the prediction). The second term is the squared observation prediction error (innovation) weighted by the measurement precision $R^{-1}$. This cost function is essentially the negative log-posterior (up to an additive constant), so minimizing it is equivalent to Bayesian MAP estimation.
+
+Update via prediction error minimization: To find the optimal $x_k$, we set $\nabla_{x_k} J = 0$. Differentiating and setting to zero gives the normal equations for the minimizer:
+
+$$
+P_{k|k-1}^{-1}(x_k - \hat{x}_{k|k-1}) - H^T R^{-1}(y_k - H,x_k) = 0.
+$$
+
+Re-arranging terms, we obtain:
+
+$$(P_{k|k-1}^{-1} + H^T R^{-1} H),x_k = P_{k|k-1}^{-1}\hat{x}_{k|k-1} + H^T R^{-1}y_k.$$
+
+Solving for $x_k$ yields the a posteriori estimate $\hat{x}_{k|k}$, which can be written in the familiar Kalman update form:
+
+$$
+\hat{x}{k|k} ;=; \hat{x}{k|k-1} + K_k,\big(y_k - H,\hat{x}_{k|k-1}\big),
+$$
+
+where
+
+$$
+K_k = P_{k|k-1} H^T, (H P_{k|k-1} H^T + R)^{-1}
+$$
+
+is the Kalman gain.  The term $(y_k - H,\hat{x}_{k|k-1})$ is the prediction error or innovation, and $K_k$ specifies the optimal weight given to this error. Notably, this gain $K_k$ is chosen precisely to minimize the posterior error covariance (i.e. it minimizes the expected mean-squared estimation error). In other words, the Kalman filter update finds the state estimate that minimizes the least-squares cost, balancing the prediction and observation errors according to their uncertainties. This is an explicit realization of prediction error minimization: the new estimate is the old prediction plus a correction term proportional to the prediction error.
+
+2. Active Inference in Least-Squares Form
+
+Variational free energy (VFE) functional: Active inference casts state estimation as a variational inference problem. One defines a variational free energy $F$ which the agent (or estimator) minimizes instead of directly computing the posterior. In filtering, a common choice is to use a Gaussian variational density (a Laplace approximation), so that the free energy essentially becomes (up to constant terms) the negative log joint probability of the hidden state and observations, evaluated at the current approximate estimate. For the linear Gaussian case (same $A, H, Q, R$ as above), the VFE can be written as a sum of squared prediction errors, just like the Kalman least-squares cost. In fact, under a variational Gaussian (Laplace) assumption, one finds:
+
+$$
+F(x_k) ;=; \frac{1}{2}(y_k - H,x_k)^T R^{-1}(y_k - H,x_k) ;+; \frac{1}{2}(x_k - A,\hat{x}{k-1|k-1})^T Q^{-1}(x_k - A,\hat{x}{k-1|k-1}) ;+; \text{const},
+$$
+
+where $\hat{x}{k-1|k-1}$ is the previous posterior mean (serving as the prior mean for $x_k$ via the linear dynamics). Here the first term is the sensory prediction error (observation minus expected observation $H x_k$) weighted by its precision $R^{-1}$, and the second term is the state prediction error (difference between $x_k$ and its prediction $A\hat{x}{k-1|k-1}$) weighted by the process precision $Q^{-1}$. This form of $F$ mirrors the Kalman least-squares cost above. Minimizing VFE thus corresponds to explaining observations and dynamics as well as possible under the model, using a quadratic penalty for deviations – exactly akin to a weighted least-squares estimation.
+
+Free-energy minimization and update rule: To perform inference, active inference minimizes $F$ with respect to the approximate posterior parameters (here, effectively the mean $x_k$ since we assume a Gaussian form). Setting $\nabla_{x_k}F = 0$ leads to the condition:
+
+$$
+H^T R^{-1}(y_k - H,x_k);+; A^T Q^{-1}(\hat{x}_{k-1|k-1} - A^{-1}x_k);=;0,
+$$
+
+which simplifies to the same normal equation obtained for the Kalman filter solution. In other words, the stationary point of $F$ yields the exact same update for $x_k$ as the Kalman filter posterior mean. We can also see this by taking partial derivatives of $F$ as in a gradient descent scheme: the VFE gradient includes terms proportional to $H^T R^{-1}(y_k - H,x_k)$ (the observation prediction error weighted by precision) and $Q^{-1}(x_k - A,\hat{x}_{k-1|k-1})$ (the state prediction error weighted by precision) ￼. Driving these gradients to zero (or performing gradient descent until convergence) gives an equilibrium point satisfying
+
+$$x_k = \hat{x}{k-1|k-1} + P{k|k-1} H^T (H P_{k|k-1} H^T + R)^{-1}(y_k - H,x_k),$$
+
+which is exactly the Kalman update formula. In fact, it has been noted that in the linear Gaussian case, minimizing variational free energy recovers the same update equations as the Kalman filter ￼. Active inference thus reproduces the Bayesian filtering solution via a least-squares (free-energy) minimization principle. Importantly, what the Kalman filter achieves in closed-form at each time step can also be achieved by an active inference agent through gradient-based minimization of VFE – the end result (optimal state estimate) is the same in this linear case.
+
+\textbf{3. Linking the Updates: Kalman Gain vs. Precision Weighting}
+
+The Kalman filter update and the active inference update can now be directly compared. The Kalman gain $K_k = P_{k|k-1}H^T (H P_{k|k-1} H^T + R)^{-1}$ determines how much the prediction is adjusted in light of new evidence. This expression can be understood in terms of precisions (inverse variances). The term $(H P_{k|k-1} H^T + R)$ in the denominator is the innovation covariance (the uncertainty in the prediction error); its inverse is the precision of the innovation. Thus $K_k$ essentially equals $P_{k|k-1}H^T$ times the precision of the prediction error. If the observation is very reliable (small $R$, high precision), $K_k$ will be larger, giving the observation prediction error more weight. If the prior estimate is very uncertain (large $P_{k|k-1}$), $K_k$ will also be larger, meaning the system trusts the new data more. This is exactly the logic of precision-weighted prediction errors: the update $\hat{x}{k|k} = \hat{x}{k|k-1} + K_k (y_k - H\hat{x}_{k|k-1})$ says that the change in the estimate is proportional to the prediction error, scaled by a factor that reflects the relative confidence in that error.
+
+In active inference, the principle of precision-weighted prediction errors plays a central role in the update rules. In our VFE expression above, each prediction error term is multiplied by the inverse covariance (precision) of that term. Consequently, when we take the gradient or update equations, the magnitude of each correction is weighted by precision in the same way as the Kalman gain does. For example, in the simple case of estimating a static variable with a Gaussian prior and likelihood, the posterior mean is the prior mean plus a fraction $\frac{\text{likelihood precision}}{\text{prior precision} + \text{likelihood precision}}$ of the prediction error – i.e. the mean is updated by a precision-weighted error. This is precisely the Kalman filter logic: the posterior estimate is a weighted combination of prior and new information, with weights proportional to their precisions (equivalently, inversely proportional to their variances).
+
+In summary, the Kalman filter’s gain $K_k$ embeds the precision weighting: it tells us how to trade off the prior estimate versus the new sensory evidence. Active inference makes this weighting explicit by formulating an objective (VFE) where precisions appear as coefficients. Minimizing that objective naturally leads to an update of the state estimate by precision-weighted prediction errors, which is mathematically equivalent to the Kalman update in the linear Gaussian case. Thus, the Kalman filter can be seen as implementing a Bayesian prediction error correction, and active inference captures the same mechanism under the umbrella of variational (free-energy) minimization. Both frameworks agree that the optimal update increment is proportional to the prediction error, weighted by the certainty (precision) of that error ￼.
+
+4. Linearization and Nonlinear Extensions
+
+So far we assumed linear dynamics and observations. How do Kalman filtering and active inference handle nonlinear problems? In the Kalman filter world, one common approach is the Extended Kalman Filter (EKF), which linearizes the nonlinear system about the current estimate. Essentially, the EKF uses a first-order Taylor expansion of the dynamics $f(x)$ and observation function $g(x)$ to compute local approximations $A \approx \partial f/\partial x$ and $H \approx \partial g/\partial x$. It then performs a Kalman update with these local Jacobians. This can be viewed as a Gauss-Newton step or local least-squares linearization at each time step. The result is a Gaussian approximate posterior for $x_k$ (mean and covariance) updated iteratively, which is approximately optimal for weakly nonlinear systems.
+
+Active inference tackles nonlinearity through its variational inference foundation. Rather than explicitly linearizing the system equations, active inference uses an approximate posterior that can be updated by gradient descent on the VFE. A common choice is to assume a Gaussian form for the posterior (the Laplace approximation), which leads to update equations very similar to an EKF. In fact, under the Laplace assumption, the variational free energy minimization entails expanding the (log) posterior to second order around its peak (the mode), which is mathematically equivalent to forming a locally linear Gaussian approximation of the model ￼. The resulting filter (sometimes called a generalized filtering or dynamic expectation-maximization scheme) yields recognition dynamics that closely match extended Kalman filtering updates ￼ ￼. In other words, active inference with a Gaussian approximate density will internally perform a linearization (through the curvature of the log-likelihood and log-prior) much like the EKF does externally by Jacobians. Indeed, it has been noted that under certain conditions, the updates from active inference are equivalent to an (extended) Kalman filter for nonlinear systems ￼ ￼.
+
+The advantage of the active inference approach is that it provides a principled Bayesian framework for extension to more complex scenarios. Nonlinear and even non-Gaussian models can be handled by changing the variational approximation or using more sophisticated inference (e.g. one could use mixture densities, particles, or iterative message passing to better approximate the posterior). The Kalman filter, in contrast, must be specifically adapted (EKF, unscented KF, particle filter, etc.) for non-linear/non-Gaussian cases. Active inference naturally generalizes because it rests on minimizing VFE: for any given generative model $p(y, x)$, one can write down $F$ and attempt to minimize it. If one uses a Gaussian ansatz, this becomes analogous to an EKF (a Laplace method); if one uses particles, it approaches a particle filter, and so on. Thus, active inference extends Kalman filtering to nonlinear regimes by casting filtering as general variational Bayesian inference. The linear Gaussian case is a useful special case where everything is analytically tractable (and the Kalman filter emerges exactly), while in truly nonlinear cases active inference will resort to iterative refinements (gradients, fixed-point iterations) to find a solution, much like one would linearize at each step in an EKF.
+
+In summary, both Kalman filtering and active inference share the same core principle of Bayesian least squares estimation. Kalman filtering provides closed-form update equations under linear Gaussian assumptions, choosing gains that minimize squared-error cost ￼. Active inference formulates the same problem via a variational free-energy objective that, in the linear case, leads to identical update rules ￼. In nonlinear scenarios, Kalman filters require explicit linearization (extended or unscented transforms), whereas active inference handles them through variational approximations (e.g. Laplace) as part of the inference process. This means that active inference inherently performs prediction error minimization with precision weighting, just as the Kalman filter does, while also providing a route to systematically handle complexity beyond the reach of basic linear Kalman filtering. The connection between the two is that Kalman filtering is essentially a specific case of active inference (or Bayesian filtering) under Gaussian assumptions – making the link between prediction-error minimization in control theory and variational free-energy minimization in cognitive neuroscience explicit and mathematically concrete ￼ ￼.
+
+References: In the above, we used standard results from Bayesian estimation theory and linear filtering. The Kalman gain is derived by minimizing the estimation error variance ￼. The active inference update in the linear-Gaussian case yields the same form, as shown by deriving the VFE and its gradient ￼ ￼ ￼. The notion of precision-weighted prediction errors appears in both frameworks ￼. For further reading, see e.g. Friston et al. on generalized filtering and predictive coding, which discuss how under Laplace assumptions active inference reduces to an equivalent of the extended Kalman filter ￼ ￼. This demonstrates the deep connection between Kalman filtering and active inference as approaches to optimal state estimation.
+% %%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
