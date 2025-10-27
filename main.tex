@@ -1,7 +1,7 @@
 \documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
 
 % Basic packages
-\usepackage{amsmath}    % For math environments
 \usepackage{graphicx}   % For images
 \usepackage{hyperref}   % For hyperlinks
 \usepackage[superscript]{cite}
@@ -10,7 +10,6 @@
 \usepackage{amsfonts}
 \usepackage{tikz}
 \usetikzlibrary{calc}  % <-- IMPORTANT for coordinate arithmetic
-\usepackage{amssymb}
 \usetikzlibrary{decorations.pathmorphing,arrows.meta}
 \usepackage{feynmp-auto}
 % Extra formatting packages
@@ -20,7 +19,7 @@
 \usepackage{setspace}   % For adjusting line spacing
 \usepackage{lmodern}    % For modern font
 \usepackage{xcolor}     % For color customization
-
+\setlength{\headheight}{13.59999pt}
 % Set up page margins
 \geometry{
     a4paper,
@@ -29,7 +28,10 @@
     top=1in,
     bottom=1in
 }
-
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem*{remark}{Remark}
 % Set up line spacing
 \onehalfspacing
 
@@ -56,7 +58,8 @@
 
 \title{Neural Encoding through Hierarchical Amplitude Modulation\\
 NE TN0434}
-\author{Giulio Ruffini\thanks{giulio.ruffini@neuroelectrics.com}, Edmundo Lopez-Sola, Borja Mercadal, and Francesca Castaldo \\ Neuroelectrics Barcelona}
+\author{Giulio Ruffini\thanks{giulio.ruffini@neuroelectrics.com} ... %, Edmundo Lopez-Sola, Borja Mercadal, and Francesca Castaldo 
+\\ Neuroelectrics Barcelona}
 
 %\newcommand{\Comparator}{$\lceil \Delta \rceil$}
 \usepackage{xspace}
@@ -66,27 +69,30 @@ NE TN0434}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
 \maketitle
-\begin{abstract}
+% \begin{abstract}
 
-The Free Energy Principle and related frameworks 
-require a hierarchical information neural encoding scheme, yet a concrete mechanism for such encoding has remained elusive.  At the same time, 
-the brain’s oscillatory rhythms appear to be arranged in a hierarchy of timescales.  
-We propose \emph{Hierarchical Amplitude Modulation} (HAM) as an  encoding
-scheme in which faster oscillations are iteratively amplitude‑modulated by slower
-ones, forming a demodulable cascade. The multiplicative structure generates
-intermodulation components at \(f_c+\sum a_i f_i\) and favors \emph{geometric}
-(log‑spaced) band centers to avoid spectral overlap, i.e., a constant‑\(Q\) arrangement
-akin to wavelet filterbanks. A simple analysis shows how such cascades can produce
-\(1/f^\alpha\)‑like aperiodic spectra with
-\(\alpha=2\ln(2/m)/\ln r\) under log spacing (ratio \(r>1\)), a candidate mechanism for aperiodic structure. As a proof of concept, we implement amplitude modulation and demodulation in a laminar
-neural mass model (LaNMM) combining PING‑like fast and JR‑like slow generators and derive the relation between band spacing, modulation depth, and aperiodic
-slope in a whole-brain model.
+% The Free Energy Principle and related frameworks 
+% require a hierarchical information neural encoding scheme, yet a satisfactory proposal has remained elusive.  At the same time, 
+% the brain’s oscillatory rhythms appear to be arranged in a hierarchy of timescales.  
+% We propose \emph{Hierarchical Amplitude Modulation} (HAM) as an encoding
+% scheme in which faster oscillations are iteratively amplitude‑modulated by slower
+% ones, forming a demodulable cascade. The multiplicative structure generates
+% intermodulation components at \(f_c+\sum a_i f_i\) and favors \emph{geometric}
+% (log‑spaced) band centers with frequency ratio $r\gtrsim 3$ to avoid spectral overlap, i.e., a constant‑\(Q\) arrangement
+% akin to wavelet filterbanks, matching electrophysiological observations. A simple analysis shows that a geometric distribution of generators leads to power-law $1/f$ spectra, and how modulation cascades can produce
+% \(1/f^\alpha\)‑like aperiodic sideband spectra with
+% \(\alpha=2\ln(2/m)/\ln r\) under log spacing,  contributing mechanisms for aperiodic structure. As a proof of concept, we implement amplitude modulation and demodulation in a laminar
+% neural mass model (LaNMM) combining PING‑like fast and JR‑like slow generators and derive the relation between band spacing, modulation depth, and aperiodic
+% slope in a whole-brain model.
+% \end{abstract}
 
-
-
+ \begin{abstract}
+Hierarchical encoding of information is a central requirement of the Free Energy Principle and related theories of brain function, yet a concrete mechanism implementing such encoding in neural dynamics has remained elusive. Concurrently, electrophysiological data reveal power laws and a hierarchical organization of oscillations with frequency ratios $r\sim$2--3.  
+We analyze this from the perspective of \emph{Hierarchical Amplitude Modulation} (HAM), a biophysically grounded encoding scheme in which faster rhythms are multiplicatively modulated by slower ones, forming a demodulable cascade of nested envelopes. This multiplicative architecture naturally generates intermodulation components at frequencies \(f_c + \sum a_i f_i\) and favors geometric (log-spaced) band centers with ratio \(r \gtrsim 3\) to ensure spectral non-overlap—a constant-\(Q\) arrangement analogous to wavelet filterbanks. This conservative guard‑band picture is consistent with the empirical organization of canonical brain rhythms. Furthermore, 
+ we show that (i) a log-uniform distribution of oscillatory generators leads to \(1/f\) power spectra, and (ii) modulation cascades produce \(1/f^{\alpha}\) aperiodic sideband spectra with \(\alpha = 2\ln(2/m)/\ln r\), linking the aperiodic slope directly to circuit parameters such as modulation depth \(m\) and spacing ratio \(r\). 
+As a proof of concept, we implement HAM within a laminar neural mass model (LaNMM) combining PING-like fast and JR-like slow populations, demonstrating how amplitude modulation and demodulation can emerge from intrinsic nonlinearities and cross-frequency coupling. Whole-brain simulations  using LaNMM nodes with logarithmically spaced generators reproduce the empirically observed \(1/f^{\alpha}\) scaling and clarify how the interplay of spacing, modulation, and cross-frequency coupling shapes the broadband background of neural power spectra. 
 \end{abstract}
-
- 
+% with a ratio $r\approx 3$. 
 
 %%%%%%%%%%%%%%%
 \clearpage
@@ -98,10 +104,10 @@ slope in a whole-brain model.
  
 
 \begin{itemize}
-\item \textbf{HAM:} A hierarchical encoding scheme where faster rhythms are multiplicatively modulated by slower processes; information can live in signals or their envelopes (and envelopes of envelopes).
-\item \textbf{Guard‑bands \& constant‑Q:} The intermodulation structure $f_c \pm \sum a_i f_i$ favors geometric (log) spacing, yielding constant fractional bandwidths and staged demodulation.
-\item \textbf{Two routes to $1/f^\alpha$:} (i) a cascade link $\alpha = 2\ln(2/m)/\ln r$; (ii) a log‑uniform mixture that yields $1/f$ in expectation with constant‑Q kernels.
-\item \textbf{Mechanism in LaNMM:} PING‑like fast generators as carriers; JR‑like slow generators for envelope extraction; practical demodulation via analytic‑signal envelopes.
+\item We introduce HAM: A hierarchical encoding scheme where faster rhythms are multiplicatively modulated by slower processes; information can live in signals or their envelopes (and envelopes of envelopes).
+\item The intermodulation structure $f_c \pm \sum a_i f_i$ favors geometric (log) spacing with frequency ratio $r\gtrsim3$ (strong super-increasing hierarchy), yielding constant fractional bandwidths and enabling staged demodulation.
+\item We present two routes to $1/f^\alpha$: (i) a cascade link $\alpha = 2\ln(2/m)/\ln r$; (ii) a log‑uniform mixture that yields $1/f$ in expectation with constant‑Q kernels.
+\item We provide a proof of concept modulation and demodulation implementation in NMM using the LaNMM with PING‑like fast generators as carriers and JR‑like slow generators for envelope extraction. 
 \end{itemize}
 
 \clearpage
@@ -125,16 +131,14 @@ Oscillatory activity in the brain plays a key role in organizing and transmittin
  Gamma oscillations, in particular, serve as carriers of sensory information, while slower rhythms modulate these carriers via cross-frequency coupling. 
  
    Importantly, oscillatory bands—such as delta, theta, alpha, beta, and gamma—exhibit
-a geometric progression with a common ratio \(r \approx 3\), i.e.,
-\(f_{k+1}=f_k/r\) with \(r>1\) (equivalently, equal spacing on a
+a geometric progression with a common ratio \(r \approx 2\)--3  (equivalently, equal spacing on a
 log-frequency axis; constant‑Q filterbank, see Figure~\ref{fig:logarithmic_hierarchy}). That is, the center frequencies increase by a constant multiplier, or equivalently, they are evenly spaced when plotted on a logarithmic scale \cite{penttonenNaturalLogarithmicRelationship2003,buzsakiNeuronalOscillationsCortical2004}.  
 %Penttonen \& Buzsáki (2003) and others \cite{penttonenNaturalLogarithmicRelationship2003,buzsakiNeuronalOscillationsCortical2004} report that behaviorally relevant brain oscillations exhibit a structured relationship that facilitates coordinated activity across neuronal networks of varying sizes and connectivity. They found that the 
 %Center frequencies and frequency ranges of oscillatory bands—from ultra-slow to ultra-fast—form an arithmetic progression when plotted on a natural logarithmic scale 
 %Due to the mathematical properties of the logarithm, the corresponding cycle lengths (the inverses of frequency)  form an arithmetic progression after logarithmic transformation. 
 %In practical terms, 
-Slower oscillations, with longer periods, provide a broad temporal window and allow integration over larger spatial extents with more variable synaptic delays, whereas faster oscillations offer more precise, spatially limited representations of information. This log-spaced organization is hypothesized to help overcome the processing limitations imposed by synaptic delays.
-
-
+Slower oscillations, with longer periods, provide a broad temporal window and allow integration over larger spatial extents with more variable synaptic delays, whereas faster oscillations offer more precise, spatially limited representations of information. Such evidence reinforces the notion that brain oscillations are organized into a conserved, hierarchical set of timescales, with adjacent rhythm classes separated by roughly constant frequency ratios on the order of 2 to 3 \cite{penttonenNaturalLogarithmicRelationship2003, buzsakiNeuronalOscillationsCortical2004, penttonenNaturalLogarithmicRelationship2003,klimeschFrequencyArchitectureBrain2018a,
+buzsakiScalingBrainSize2013,buzsaki_brain_2023}.
 
  
 Motivated by these observations, we propose a \textit{hierarchical amplitude modulation} (HAM) framework for neural information encoding. In HAM, information is represented in a layered fashion: the raw oscillatory signal (the carrier), its amplitude envelope, and, recursively, the envelope of that envelope.  This nested modulation approach yields a coarse-grained, multiscale, natural representation of information. As each successive envelope captures fluctuations at a slower timescale, the system exhibits a logarithmic frequency spacing and power law of oscillatory dynamics—phenomena that align with the observed geometric progression of brain rhythms. 
@@ -146,10 +150,9 @@ Motivated by these observations, we propose a \textit{hierarchical amplitude mod
     \includegraphics[width=1\linewidth]{figures/logarithmic_hierarchy.png}
     \label{fig:logarithmic_hierarchy}
     \caption{Logarithmic oscillatory hierarchy.
-Oscillation bands in rat are approximately log‑spaced with common ratio \(r>1\)
-so that \(f_{k+1}=f_k/r\) (empirically \(r\approx 3\) between neighboring
-bands)  \cite {penttonenNaturalLogarithmicRelationship2003}. This is equivalent to equal spacing on a log‑frequency axis and
-corresponds to a constant‑Q arrangement.}
+Oscillation bands in rat are approximately log‑spaced with an approximately common ratio \(r\)
+so that \(f_{k+1}=f_k/r\) (empirically \(r\approx 2\)--3 between neighboring
+bands)  \cite {penttonenNaturalLogarithmicRelationship2003}.  This approaches the theoretical limit of $r\gtrsim 3$ for non-overlapping sideband clusters and is equivalent to equal spacing on a log‑frequency axis (corresponding to a constant‑Q arrangement).}
 \end{figure}
 % https://colab.research.google.com/drive/1XSmrR51GdENpHDsh4ujWh7NFp4po9NwC#scrollTo=-d9JBVYRYILM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -164,7 +167,7 @@ In the following sections, we present the mathematical formulation of the  model
 
 
 \section{Hierarchical amplitude modulation (HAM)}
-\noindent \textbf{From single-layer AM to hierarchical modulation.} In standard amplitude modulation (AM) (as used in radio), information is encoded in the \emph{amplitude} of a high-frequency carrier wave. For example, an audio signal $m(t)$ (low-frequency information) can modulate a higher-frequency carrier $C(t) = A_c \cos(2\pi f_c t)$ by varying the carrier’s amplitude in proportion to $m(t)$. The result is a modulated signal 
+\subsection{From single-layer AM to hierarchical modulation} In standard amplitude modulation (AM) (as used in radio), information is encoded in the \emph{amplitude} of a high-frequency carrier wave. For example, an audio signal $m(t)$ (low-frequency information) can modulate a higher-frequency carrier $C(t) = A_c \cos(2\pi f_c t)$ by varying the carrier’s amplitude in proportion to $m(t)$. The result is a modulated signal 
 \begin{equation}
 S(t) \;=\; A_c\,[1 + a\,m(t)]\,\cos(2\pi f_c t)\,,
 \label{eq:AM_single}
@@ -174,7 +177,7 @@ where $a$ is the modulation index (chosen so that $1+a\,m(t)>0$ to avoid distort
 
 \begin{figure}[t!]
     \centering
-    \includegraphics[width=1.0\linewidth]{figures/AM_signals.png}
+    \includegraphics[width=0.85\linewidth]{figures/AM_signals.png}
  
    \caption{\textbf{Amplitude modulation (AM)}, where information is encoded in the envelope of a carrier, as in AM radio.   }
     \label{fig:AM}
@@ -202,32 +205,122 @@ This multiplicative, multiband structure is illustrated in Figure~\ref{fig:ham_e
 
 \begin{figure}[t!]
     \centering
-    \includegraphics[width=0.9\linewidth]{figures/ham_signals.png}
-    \includegraphics[width=0.9\linewidth]{figures/ham_spectrum.png}
-    \caption{HAM example: A high-frequency carrier is successively modulated by slower oscillations in a nested multiplicative structure. Each subplot presents a key stage in the formation of the hierarchical signal:
-	1.	Envelope Modulations (First three Subplots): Each line represents an envelope function of the form  $1 + m_i \cos(2\pi f_i t + \phi_i)$, where each modulation frequency  $f_i$  is progressively lower. These envelopes modulate all previously applied layers, creating an intricate structure of amplitude variations at multiple timescales.
-	2.	Final Hierarchical AM Signal (demeaned): The resulting signal after applying all modulation layers. This waveform is the product of all envelope layers modulating a carrier, generating a complex multi-scale amplitude variation.
-	3.	The resulting signal after applying all modulation layers. This waveform is the product of all envelope layers modulating a carrier, generating a complex multi-scale amplitude variation. The signal is filtered around the highest carrier frequency (125 Hz). This highlights how the original high-frequency carrier retains structured amplitude variations due to the hierarchical modulation. The final plot displays the spectrum of the full signal, 
-The hierarchical nature of modulation creates a combinatorial spectral expansion, where all integer combinations of modulating frequencies contribute to the final spectrum. This structure necessitates logarithmic spacing of modulation frequencies to prevent spectral overlap and ensure clear separation of modulation layers. The figure also shows a logarithmic decay in power, which stems from the successive product of $m_i$ factors in each band.}
+    \includegraphics[width=0.85\linewidth]{figures/ham_signals.png}
+    \includegraphics[width=0.8\linewidth]{figures/ham_spectrum.png}
+    \caption{\textbf{HAM example.} A high-frequency carrier is successively modulated by slower oscillations in a nested multiplicative structure. Each subplot presents a key stage in the formation of the hierarchical signal:
+	(A)	Envelope Modulations (First three subplots from top): Each line represents an envelope function of the form  $1 + m_i \cos(2\pi f_i t + \phi_i)$, where each modulation frequency  $f_i$  is progressively lower. These envelopes modulate all previously applied layers, creating an intricate structure of amplitude variations at multiple timescales.
+	(B)	Demeaned, final Hierarchical AM Signal (fourth plot): The resulting signal after applying all modulation layers. This waveform is the product of all envelope layers modulating a carrier, generating a complex multi-scale amplitude variation. The signal is filtered around the highest carrier frequency (125 Hz). This highlights how the original high-frequency carrier retains structured amplitude variations due to the hierarchical modulation. (C) Spectrum of the full signal. 
+The hierarchical nature of modulation creates a combinatorial spectral expansion, where all integer combinations of modulating frequencies contribute to the final spectrum. This structure requires logarithmic spacing of modulation frequencies to prevent spectral overlap and ensure clear separation of modulation layers. The figure also shows a logarithmic decay in sideband power, which stems from the successive product of $m_i$ factors in each band.}
     \label{fig:ham_example}
 \end{figure}
 
 
-\noindent \textbf{Logarithmic band spacing and guard bands.} A critical challenge in any multi-layer modulation is avoiding spectral \textit{overlap} between components. If the newly generated sideband frequencies crowd into neighboring frequency bands, information at different layers would interfere. In engineered communication systems, this is solved by allocating \emph{guard bands} and using a \emph{constant-Q} spacing of carriers – meaning each carrier’s bandwidth is a fixed fraction of its center frequency (a logarithmic progression of center frequencies). Strikingly, brain oscillations also appear roughly log-spaced in frequency (each band about a constant ratio higher than the next) \cite{penttonenNaturalLogarithmicRelationship2003,buzsakiNeuronalOscillationsCortical2004}. HAM provides a mechanistic reason for this: \emph{geometric spacing} of frequencies naturally prevents intermodulation overlap.
+\subsection{Avoiding spectral overlap. Logarithmic band spacing and guard bands}
+A critical challenge in any multi-layer modulation is avoiding spectral \textit{overlap} between components. If the newly generated sideband frequencies crowd into neighboring frequency bands, information at different layers would interfere and demodulation will not be possible. In engineered communication systems, this is solved by allocating \emph{guard bands} and using a \emph{constant-Q} spacing of carriers – meaning each carrier’s bandwidth is a fixed fraction of its center frequency (a logarithmic progression of center frequencies). Strikingly, brain oscillations also appear roughly log-spaced in frequency (each band about a constant ratio higher than the next) \cite{penttonenNaturalLogarithmicRelationship2003,buzsakiNeuronalOscillationsCortical2004}. HAM provides a mechanistic reason for this: \emph{geometric spacing} of frequencies naturally prevents intermodulation overlap.
 
-Mathematically, one sufficient condition to keep all sideband clusters disjoint is to require that each higher-frequency $f_k$ exceeds the sum of all lower frequencies. In other words, if $f_k > \sum_{j>k} f_j$ for every $k$, then no combination of slower oscillators can produce a difference-frequency that reaches $f_k$. This strict \textit{super-increasing} hierarchy guarantees unique spectral placements but is stronger than necessary. A more practical design is to choose a common spacing ratio $r>1$ such that 
+Mathematically, the necessary and sufficient condition to keep all sideband clusters disjoint (and hence ensure sequential demodulation) is to require that each higher-frequency $f_k$ exceeds twice the sum of all lower frequencies (see Appendix~\ref{sec:hierarchical_am}). In other words, if 
 \begin{equation}
-f_{k+1} \approx \frac{f_k}{r}\,,
+f_k > 2\sum_{j>k} f_j \quad \mbox{ for every } k, 
+\end{equation}
+then no combination of slower oscillators can produce a difference-frequency that reaches the $f_k$ cluster. 
+%This strict \textit{super-increasing} hierarchy guarantees unique spectral placements but is stronger than necessary. 
+A  practical design meeting the necessary condition is to choose a common spacing ratio $r$ such that 
+\begin{equation}
+f_{k+1} \approx \frac{f_k}{r}\, , \quad \text{ with } r\gtrsim 3,
 \label{eq:geometric_spacing}
 \end{equation}
-yielding an approximately constant factor separation between successive bands. Geometric spacing (log-uniform in frequency) ensures that each modulation’s sidebands fit into the “gaps” between adjacent bands without overlap. In fact, if $r$ is large enough ($r>2$ suffices for non-overlap, $r>3$ for strict uniqueness), the bands behave like well-separated narrow channels. In practice, neural oscillations exhibit $r\approx 2$–3 (e.g., delta~$\sim$2–4 Hz, theta~$\sim$6–8 Hz, alpha~$\sim$10 Hz, etc.), which provides adequate separation. This log-spaced, constant-Q arrangement mirrors classical wavelet filter banks and the cochlear frequency, and it matches the empirical observation of near-logarithmic spacing in canonical brain rhythm bands.
+yielding an approximately constant factor separation between successive bands. Geometric spacing (log-uniform in frequency) ensures that each modulation’s sidebands fit into the “gaps” between adjacent bands without overlap if $r$ is large enough. %: $r>2$ suffices for non-overlap, $r>3$ for strict uniqueness. 
+Then, the bands behave like well-separated narrow channels. In practice, neural oscillations exhibit $r\approx 2$–3 (e.g., delta~$\sim$2–4 Hz, theta~$\sim$6–8 Hz, alpha~$\sim$10 Hz, etc.), which provides adequate separation for finite-depth or weak modulation. This log-spaced, constant-Q arrangement mirrors classical wavelet filter banks and the cochlear frequency, and it matches the empirical observation of near-logarithmic spacing in canonical brain rhythm bands.
 
 Crucially, the log-spaced hierarchy means each oscillatory “band” retains its identity (its own frequency range) even as it participates in a larger modulation cascade. By keeping modulation depths $m_i$ moderate ($m_i<1$), each layer’s sidebands remain as small perturbations around the existing lines. This avoids excessive distortion and allows the original carrier and envelope signals to be separated by bandpass filtering or sequential demodulation. In summary, HAM’s multiplicative encoding across scales naturally favors a logarithmic frequency arrangement: only with such spacing can a deep hierarchy of oscillations coexist without mutual spectral interference.
 
-\subsection*{HAM and power-law spectral scaling}
-An intriguing consequence of the HAM cascade is the emergence of \textit{power-law} scaling in the combined spectrum. Because each modulation layer redistributes a fraction of the signal’s power to lower frequencies, the overall spectral density tends to decline with frequency in a scale-free (fractal-like) manner. In fact, under log-spacing, a simple analysis shows that the power spectral density of a hierarchical cascade approximately follows $P(f)\sim 1/f^{\alpha}$ – a $1/f$-type law – with the exponent $\alpha$ depending on the modulation depth ($m$) and spacing ratio ($r$).
 
-For intuition, consider an idealized case where every layer uses the same depth $m$ and ratio $r$ for clarity. The first modulation produces sidebands carrying a fraction $\sim (m/2)^2$ of the carrier power (since each first-order sideband has amplitude $\approx m/2$ of the carrier). The next modulation layer acts on those sidebands, generating second-order components of order $(m/2)^2$ times the first layer’s amplitude, i.e. $(m/2)^4$ relative to the original carrier’s amplitude, and so on. After $k$ layers, the characteristic frequency has decreased to $f_k \approx f_0/r^k$, and the power at that scale is suppressed by roughly $(m/2)^{2k}$ relative to the top. Quantitatively, one can show (see Appendix)
+
+\subsection{Power-law spectral scaling}
+
+
+
+Empirically, many electrophysiological signals exhibit an aperiodic $1/f$-like background in their power spectra. The HAM mechanism offers two complementary explanations for this ubiquitous observation. First, a single deep cascade of nested oscillations can generate a $1/f^{\alpha}$ spectrum with $\alpha$ tuned by neuronal parameters (e.g., modulation strengths and band spacing). Second, even if individual oscillatory pairs are only weakly coupled, a whole population of log-spaced oscillators will \emph{collectively} produce a $1/f$-type spectrum in the aggregate. In the latter case, the intuition is that having equal power per octave (a flat distribution on a log-frequency axis) naturally yields a $P(f)\propto 1/f$ spectrum. In other words, if oscillatory power is spread roughly evenly across logarithmic frequency bins (as constant-Q band partitioning does), the summed spectrum follows a pink-noise $1/f$ profile (this is a well-known property in audio and wavelet analysis). The HAM framework encompasses both routes: the “cascade route” linking $\alpha$ to specific circuit parameters (Eq.~(\ref{eq:powerlaw})), and the “ensemble route” where many oscillators with log-uniform frequency spacing produce $\alpha\approx1$ in expectation. Both mechanisms may operate in neural systems, contributing to the observed aperiodic power law scaling in brain activity. 
+
+\subsubsection*{Global Spectrum} 
+ An immediate result from the geometric scaling architecture is power law spectral scaling. As shown in Appendix~\ref{app:powerlaw},   a bank of log‑spaced oscillators with equal power per band produces \(S(f)\approx 1/f\).
+Morevoer, random AM pairings add a constant pedestal; stronger modulation (\(m\)) or more pairs
+increase \(\kappa_0\) and flatten the fitted \(\alpha\) over finite windows. Finally, using constant‑\(Q\)
+kernels (or filters) should push the fitted slope in Fig.~\ref{fig:logarithmic_hierarchy} toward \(\alpha\approx 1\) and
+increase the fitting range.
+The assumption \(\rho(f)\propto 1/f\) parallels empirical \emph{logarithmic spacing} of neural bands \cite{penttonenNaturalLogarithmicRelationship2003} and is mathematically equivalent to a constant‑\(Q\)
+tiling (equal spacing on a log‑frequency axis) \cite{brownCalculationConstantSpectral1991}. 
+
+
+
+
+
+\begin{figure} [t!]
+    \centering
+    \includegraphics[width=0.99\linewidth]{figures/simulated_spectrum_PBuz.png}
+    \caption{\textbf{Log--log spectra for log-spaced oscillators with AM sidebands.}
+We display the HAM  spectrum using the Penttonen--Buzsáki band centers and equal amplitude carriers, which leads to $1/f$ behavior. \label{fig:simulationfullspectrum}
+% https://colab.research.google.com/drive/1Pi7JAZTRPXa7-UuQ-hx75XIW4hYB8_qr#scrollTo=xm2iPf5RuBaB
+The solid curve shows the per‑Hz power spectral density (PSD) obtained by summing
+constant–$Q$ Gaussian lines for carriers and their first‑order AM sidebands
+($f_c\pm f_m$, $f_m<f_c$).   Each base center is replicated with multiplicative jitter
+$s\!\sim\!\mathcal{U}[1/2,2]$ to populate each cluster, carrier amplitudes are $A_c\equiv 1$,
+and the sideband power is $\big(\tfrac{mA_c}{2}\big)^2$ with $m=0.9$.
+Dotted vertical lines mark the Penttonen–Buzsáki center frequencies; faint spans indicate
+their reported ranges. The dashed line is a $C/f$ reference. Fitted slopes
+over 5–250\,Hz are indicated in the legend. Because generator density per Hz declines roughly as $1/f$
+under log spacing, the aggregate PSD decays with frequency; AM sidebands add a low‑$f$
+pedestal but preserve the $1/f$ backbone in the interior.
+}
+
+\end{figure}
+% 
+ 
+
+\paragraph{Synthetic spectra for log-spaced oscillators with AM sidebands.}
+
+We tested the prediction that a log-spaced hierarchy of oscillatory generators produces a
+per-Hz power density that decays with frequency on a linear axis (reflecting the decreasing
+generator density per Hz), and that the aggregate spectrum approaches a power law on a
+log--log axis (see Figure~\ref{fig:simulationfullspectrum}).
+We considered a frequency organizations using the set of
+Penttonen--Buzsáki band centers. To fill gaps on a linear frequency axis, each center
+$f_i$ was replicated $K$ times with multiplicative jitter $u\sim\mathrm{Uniform}[1,2]$,
+producing micro-generators at $u f_i$ (truncated to $[f_{\min},f_{\max}]$).
+Each micro-generator contributes a narrowband line shaped by a constant-$Q$ Gaussian
+kernel (fractional width $\sigma/f=q$) so that bandwidth scales with center frequency.
+We set all carrier amplitudes to $a_i=1$ (equal power). To emulate amplitude modulation, we drew $M$ random pairs $(f_m,f_c)$ from the
+micro-generators with $f_m<f_c$ and added first-order sidebands at $f_c\pm f_m$, each
+weighted by $(m/2)^2$ in power, where $m\in(0,1)$ is the modulation depth.
+Per-Hz power spectra were computed on a dense linear frequency grid and shown on a log--log
+axis. A $1/f$ reference ($k/f$) was overlaid by matching the median of $S(f)\,f$ in an
+interior band. The aperiodic slope $\alpha$ was estimated by ordinary least squares on
+$\log_{10}S(f)$ vs.\ $\log_{10}f$ over a predefined range (5--250\,Hz). The design
+tests the claims that (a) constant-$Q$ log spacing implies decreasing spectral power density with
+frequency, and (b) the aggregate spectrum approximates $1/f^{\alpha}$, with sidebands
+enhancing low-frequency accumulation while preserving the backbone.
+
+
+
+
+\subsubsection*{Sideband Spectrum} 
+A further consequence of the HAM cascade is the emergence of \textit{power-law} scaling in the sideband spectrum. Because each modulation layer redistributes a fraction of the signal’s power to lower frequencies, the overall spectral density tends to decline with frequency in a scale-free (fractal-like) manner. In fact, under log-spacing, a simple analysis shows that the power spectral density of a hierarchical cascade approximately follows $P(f)\sim 1/f^{\alpha}$ – a $1/f$-type law – with the exponent $\alpha$ depending on the modulation depth ($m$) and spacing ratio ($r$).
+
+
+\begin{figure} [t!]
+    \centering
+    \includegraphics[width=0.6\linewidth]{figures/power_law.png}
+\caption{\textbf{Power‑law exponent \(\alpha\) for log‑spaced HAM sideband.}
+For \(r>1\), the toy‑model exponent is
+\(\alpha=2\ln(2/m)/\ln r\). Larger \(m\) (stronger modulation) and
+larger \(r\) (wider spacing) both \emph{reduce} \(\alpha\) (shallower slope);
+smaller \(m\) steepens the slope.}
+
+    \label {fig:power_law}
+\end{figure}
+
+
+For intuition, consider an idealized case where every layer uses the same depth $m$ and ratio $r$ for clarity. The first modulation produces sidebands carrying a fraction $\sim (m/2)^2$ of the carrier power (since each first-order sideband has amplitude $\approx m/2$ of the carrier). The next modulation layer acts on those sidebands, generating second-order components of order $(m/2)^2$ times the first layer’s amplitude, i.e. $(m/2)^4$ relative to the original carrier’s amplitude, and so on. After $k$ layers, the characteristic frequency has decreased to $f_k \approx f_0/r^k$, and the power at that scale is suppressed by roughly $(m/2)^{2k}$ relative to the top. Quantitatively, one can show (see Appendix~\ref{app:powerlaw})
 \begin{equation}
 P(f_k) \;\propto\; \Big(\frac{f_k}{f_0}\Big)^{2\ln(m/2)/\ln(1/r)} \;=\; \frac{1}{f_k^{\,\alpha}}~,
 \label{eq:powerlaw}
@@ -238,44 +331,13 @@ where
 \] 
 This indicates a $1/f^{\alpha}$ scaling of the cascade’s spectrum. Notably, $\alpha$ increases as $m$ decreases (weaker modulation yields a steeper spectral drop-off) and $\alpha$ decreases as $r$ increases (wider band gaps flatten the spectrum). Figure~\ref {fig:power_law} illustrates this relationship: stronger modulation (larger $m$) or broader spacing (larger $r$) results in a shallower slope (smaller $\alpha$), whereas small $m$ leads to a pronounced $1/f^{\alpha}$ fall-off. 
 
-
-\begin{figure} [t!]
-    \centering
-    \includegraphics[width=0.6\linewidth]{figures/power_law.png}
-\caption{\textbf{Power‑law exponent \(\alpha\) for log‑spaced HAM.}
-For \(r>1\), the toy‑model exponent is
-\(\alpha=2\ln(2/m)/\ln r\). Larger \(m\) (stronger modulation) and
-larger \(r\) (wider spacing) both \emph{reduce} \(\alpha\) (shallower slope);
-smaller \(m\) steepens the slope.}
-
-    \label {fig:power_law}
-\end{figure}
-
-Empirically, many electrophysiological signals exhibit an aperiodic $1/f$-like background in their power spectra. The HAM mechanism offers two complementary explanations for this ubiquitous observation. First, a single deep cascade of nested oscillations can generate a $1/f^{\alpha}$ spectrum with $\alpha$ tuned by neuronal parameters (e.g., modulation strengths and band spacing). Second, even if individual oscillatory pairs are only weakly coupled, a whole population of log-spaced oscillators will \emph{collectively} produce a $1/f$-type spectrum in the aggregate. In the latter case, the intuition is that having equal power per octave (a flat distribution on a log-frequency axis) naturally yields a $P(f)\propto 1/f$ spectrum. In other words, if oscillatory power is spread roughly evenly across logarithmic frequency bins (as constant-Q band partitioning does), the summed spectrum follows a pink-noise $1/f$ profile (this is a well-known property in audio and wavelet analysis). The HAM framework encompasses both routes: the “cascade route” linking $\alpha$ to specific circuit parameters (Eq.~(\ref{eq:powerlaw})), and the “ensemble route” where many oscillators with log-uniform frequency spacing produce $\alpha\approx1$ in expectation. Both mechanisms may operate in neural systems, contributing to the observed aperiodic $1/f$ scaling in brain activity. 
-
-\paragraph{Simulation.} As an example, we simulated 5,000 uncoupled harmonic oscillators sampled either uniformly or logarithmically between 0.5–200 Hz. Sampled oscillator pairs (a carrier and a modulator) were constrained such that the modulator frequency \( f_m \) was less than the carrier frequency \( f_c \). For each valid pair, we added power at \( f_m \) and \( f_c \) using a Gaussian kernel ($\sigma$ = 0.5 Hz). In a second condition, we also added power at the AM-generated sidebands \( f_c \pm f_m \). The resulting aggregate spectrum was normalized, and its slope \( \alpha \) estimated via linear regression in log-log space for \( f > 5 \) Hz. Figure \ref{fig:logspectra} provides an overview of the findings:  
-For a \textit{uniform frequency distribution,} there is no power-law scaling (\( \alpha \approx 0.08 \), flat spectrum). For 
-\textit{log-spaced frequencies without sidebands}, a clear power-law (\( \alpha \approx 0.84 \)) demonstrates that log-distributed source density and hierarchical pairing are sufficient. Finally, for 
-  \textit{log-spaced frequencies, with sidebands,} a shifted scaling is found (\( \alpha \approx 0.95 \)).
-
-\begin{figure}[t!]
-    \centering
-    \includegraphics[width=0.95\linewidth]{figures/Power-Law Fits: Effect of Sidebands on Spectral Slope.png}
-    \caption{ Power spectra and fitted power-law slopes for hierarchical amplitude modulation (AM) simulations with $f_m < f_c$. 
-The \textbf{uniform} oscillator distribution shows no meaningful scaling ($\alpha \approx 0.08$). 
-The \textbf{log-spaced} distribution yields a clear $1/f^\alpha$ structure. 
-Including AM sidebands ($f_c \pm f_m$) results in a slightly steeper slope ($\alpha \approx 0.95$) than when only the modulator and carrier frequencies are included ($\alpha \approx 0.84$), reflecting enhanced low-frequency accumulation. 
-Dashed lines indicate linear fits in log-log space over $f > 5$ Hz.}
-    \label{fig:logspectra}
-\end{figure}
-%https://colab.research.google.com/drive/1Pi7JAZTRPXa7-UuQ-hx75XIW4hYB8_qr
+Thus, the emergence of $1/f^\alpha$ spectral structure in hierarchical AM systems is explained by two minimal structural constraints: (1) a log-spaced distribution of oscillators and (2) a modulation rule enforcing \( f_m < f_c \). Sidebands are not necessary for scale-free behavior but do enhance low-frequency accumulation and steepen the slope.
 
 
-The emergence of $1/f^\alpha$ spectral structure in hierarchical AM systems is fully explained by two minimal structural constraints: (1) a log-spaced distribution of oscillators and (2) a modulation rule enforcing \( f_m < f_c \). Sidebands are not necessary for scale-free behavior but do enhance low-frequency accumulation and steepen the slope.
 
-We further tested how the geometric spacing ratio between oscillator frequencies affects the emergence of the power law. Using between 5 and 100 logarithmically spaced bins to populate the frequency range (0.5–200 Hz), we found that the slope $\alpha$ increases rapidly between 5 and 20 bins (corresponding to spacing ratios $r \approx 3.31$ to $1.35$), but plateaus beyond 30 bins ($r \approx 1.22$). Increasing the number of bins beyond 30 had no meaningful impact on the spectral slope, which stabilized near $\alpha \approx 0.96$. This indicates that while logarithmic spacing is essential, only moderate resolution is needed to fully express the scaling. Finer band divisions contribute little additional structure once the modulation space is densely sampled.
 
-% 
+
+
 
 \section{Modulation and demodulation in LaNMM}
 
@@ -283,25 +345,6 @@ We previously introduced a laminar neural mass model (LaNMM) designed to capture
 
 To implement and process information in the amplitude modulation scheme, modulation and demodulation must be performed. Here, we describe how this can be achieved thanks to the nonlinearity in the model --- the sigmoid (see Figures~\ref{fig:LaNMM_Mod_Demod} and~\ref{fig:modulation}).
 
-
-
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.95\linewidth]{figures/mod_demod.png}
-    \caption{Conceptual diagram and representative data demonstrating LaNMM acting as both modulator and demodulator:
-    a) The prior modulates the amplitude/frequency of a faster carrier input;
-    b) The input’s envelope is extracted by the slow dynamics of P1, illustrating demodulation.}
-    \label{fig:LaNMM_Mod_Demod}
-\end{figure}
-
-
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=0.95\linewidth]{figures/modulation.png}
-    \caption{\textbf{Modulation schemes.} a) Modulation of a carrier by a message through multiplication. b) Implementation in laNMM through top-down inputs from a parcel Y upstream to slow population or inhibitory neurons in the fast circuit. A steady oscillation (carrier) is received from the downstream parcel W. The modulated carrier output is sent upstream to Parcel Y. In Model 1, top-down excitatory inputs arrive at the pyramidal cell in L5. In Model 2, they arrive at the PV+ interneuron in L1, with inhibitory consequences for the PING pyramidal population in L1.}
-    \label{fig:modulation}
-\end{figure}
 
 
 
@@ -337,6 +380,29 @@ where \(A_{j} > 0\) sets the baseline (DC offset),
   \(m_{j}\) is the modulation index for layer \(j\),
    \(f_{j}\) is the new (faster) carrier frequency at layer \(j\), and 
  \(\phi_{j}\) is a phase term.
+
+
+
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{figures/mod_demod.png}
+    \caption{\textbf{LaNMM architecture for modulation and demodulation.}
+    a) The prior modulates the amplitude/frequency of a faster carrier input;
+    b) The input’s envelope is extracted by the slow dynamics of P1, illustrating demodulation.}
+    \label{fig:LaNMM_Mod_Demod}
+\end{figure}
+
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{figures/modulation.png}
+    \caption{\textbf{Modulation schemes.} a) Modulation of a carrier by a message through multiplication. b) Implementation in laNMM through top-down inputs from a parcel Y upstream to slow population or inhibitory neurons in the fast circuit. A steady oscillation (carrier) is received from the downstream parcel W. The modulated carrier output is sent upstream to Parcel Y. In Model 1, top-down excitatory inputs arrive at the pyramidal cell in L5. In Model 2, they arrive at the PV+ interneuron in L1, with inhibitory consequences for the PING pyramidal population in L1.}
+    \label{fig:modulation}
+\end{figure}
+
+
 
 
 Thus each stage builds on the previous envelope:
@@ -422,6 +488,24 @@ In short, the total spectrum in a whole brain model is the superposition of all 
 \paragraph{Oscillations in the brain.}
 Oscillations are ubiquitous in neural systems and organize computation across space and time \cite{buzsaki_brain_2023, buzsakiNeuronalOscillationsCortical2004,  friesRhythmsCognitionCommunication2015,chenOscillatoryControlCortical2025}. Slow rhythms (delta–alpha/beta) tend to coordinate large-scale context and top-down control, whereas faster beta/gamma rhythms carry local content and bottom-up signals; laminar and inter-areal physiology support this spectral dissociation \cite{vankerkoerleAlphaGammaOscillations2014,bastosDCMStudySpectral2015,spaakLayerspecificEntrainmentGammaband2012,bastosCanonicalMicrocircuitsPredictive2012,bastos_laminar_2018}. Cross-frequency coupling (CFC) provides the bridge between these scales, with slow phases modulating fast-band envelopes and timing \cite{canoltyFunctionalRoleCrossfrequency2010,lismanThetaGammaNeuralCode2013}. 
 
+
+Across EEG/MEG/ECoG and intracranial recordings, canonical rhythm classes
+(delta, theta, alpha, beta, gamma) occur at progressively higher center
+frequencies whose separations are roughly constant on a log–frequency axis.
+In practice, adjacent bands are typically separated by a factor of about
+two to three (e.g., $\theta\!\sim\!4$–7\,Hz, $\alpha\!\sim\!8$–12\,Hz,
+$\beta\!\sim\!15$–30\,Hz, $\gamma\!\sim\!40$–80\,Hz), yielding an
+approximately geometric hierarchy of timescales \cite{penttonenNaturalLogarithmicRelationship2003,buzsakiNeuronalOscillationsCortical2004,buzsakiRhythmsBrain2006,friesRhythmsCognitionCommunication2015,klimeschEEGAlphaOscillations2007,donoghueParameterizingNeuralPower2020}.
+Penttonen and Buzsáki explicitly quantified near–log spacing in rodents
+\cite{penttonenNaturalLogarithmicRelationship2003}; convergent human and
+non‑human primate reviews and textbooks report comparable band centers and
+boundaries, which imply ratios $r\!\approx\!2$–3 between neighboring classes
+\cite{buzsakiNeuronalOscillationsCortical2004,buzsakiRhythmsBrain2006,klimeschEEGAlphaOscillations2007,friesRhythmsCognitionCommunication2015}.
+Methodological work that separates periodic peaks from the aperiodic
+background further confirms that these peaks recur at roughly logarithmic
+intervals across individuals and tasks \cite{donoghueParameterizingNeuralPower2020}.
+
+
 Recent frequency-tagging work makes this hierarchy directly observable: when two inputs are presented at distinct tagging rates, neural responses exhibit \emph{intermodulation} (IM) components at sums and differences of the tags—clear fingerprints of multiplicative mixing/demodulation predicted by HAM. This has been leveraged in steady-state visual paradigms to probe integration and attention \cite{norciaSteadystateVisualEvoked2015}. Comprehensive reviews document robust IM sidebands across visual cognition \href{https://doi.org/10.1016/j.neuroimage.2019.06.008}{\cite{gordonIntermodulationComponentsVisual2019}} and characterize their generators and applications \href{https://doi.org/10.1016/j.neuroimage.2024.120937}{\cite{chenIntermodulationFrequencyComponents2024}}. In our framework, these sidebands arise naturally from envelope–carrier architectural interactions: slow predictive rhythms (alpha/theta) multiplicatively gate fast carriers (beta/gamma), yielding IM structure around each band center while preserving separability under approximate logarithmic spacing (constant-$Q$). This same logic explains why, after constant-$Q$ preprocessing, both periodic peaks and an aperiodic $1/f^\alpha$ backbone can be read without mutual bias \cite{donoghueParameterizingNeuralPower2020,heScalefreeBrainActivity2014}.
 
 \paragraph{Computation with oscillators.}
@@ -436,7 +520,7 @@ Information in engineered systems may be encoded digitally (symbolic, discrete) 
 Debates on neural coding (rate, temporal/ spike‑timing, phase, and burst codes) converge on the view that multiple encoding schemes coexist and are multiplexed across scales \cite{zeldenrustNeuralCodingBurstsCurrent2018,carianiTimeEssenceNeural2022,lismanThetaGammaNeuralCode2013}. In this light, HAM specifies \emph{one} concrete way slow rhythms coordinate fast content: theta/alpha phases gate gamma‑band carriers (rate/temporal information) via gain control, with nested envelopes enabling compositional, layered messages. This aligns with ``communication‑through‑coherence'' and the spectral dissociation of feedforward/feedback pathways \cite{friesRhythmsCognitionCommunication2015,vankerkoerleAlphaGammaOscillations2014,bastosDCMStudySpectral2015}. More broadly, oscillator‑based computation is increasingly recognized as a viable computing paradigm; HAM connects that literature to cortical field dynamics \cite{todri-sanialComputingOscillatorsTheoretical2024, effenbergerFunctionalRoleOscillatory2025,singerOscillationsNaturalNeuronal2025}.
 
 \paragraph{Why log spacing? Guard bands and constant-$Q$.}
-Intermodulation at each stage produces sideband clusters around every center frequency. Avoiding spectral collisions across levels requires the span of slower combinations to fit inside the guard band of faster clusters. A strict super‑increasing hierarchy $f_k>\sum_{j>k}f_j$ suffices to keep clusters disjoint; geometric spacing $f_{k+1}=f_k/r$ satisfies this with margin for $r\gtrsim 2$ and yields constant fractional bandwidths (constant-$Q$), making demodulation scale‑invariant and mirroring classical filterbanks and cochlear tiling \cite{brownCalculationConstantSpectral1991}. Exact ratios are not essential—the weaker non‑overlap inequality already pushes the ensemble toward a log‑uniform density of centers.
+Intermodulation at each stage produces sideband clusters around every center frequency. Avoiding spectral collisions across levels requires the span of slower combinations to fit inside the guard band of faster clusters. A strict super‑increasing hierarchy $f_k>2 \sum_{j>k}f_j$ suffices to keep clusters disjoint; geometric spacing $f_{k+1}=f_k/r$ satisfies this with margin for $r\gtrsim 3$ and yields constant fractional bandwidths (constant-$Q$), making demodulation scale‑invariant and mirroring classical filterbanks and cochlear tiling \cite{brownCalculationConstantSpectral1991}. Exact ratios are not essential—a weaker non‑overlap inequality already pushes the ensemble toward a log‑uniform density of centers. Empirically, $r \approx 2$--$3$ lies near the theoretical $r > 3$ threshold, explaining why real bands show limited but tolerable overlap.
 
 \paragraph{Two routes to the aperiodic $1/f^\alpha$.}
 HAM predicts $1/f^\alpha$ via two complementary mechanisms. (i) \emph{Cascade route:} with log spacing and small, quasi‑uniform modulation depth $m$, $k$‑modulator terms scale $\sim(m/2)^k$; because $k\!\sim\!\log_r(f_1/f)$, $P(f)\propto f^{-\alpha}$ with $\alpha=2\ln(2/m)/\ln r$. This links slope to circuit variables, predicting how $\alpha$ should shift with changes in $m$ or $r$. (ii) \emph{Mixture route:} a log‑uniform bank of narrowband (constant‑$Q$) oscillators already yields $\sim 1/f$ in expectation (equal power per octave). Random AM pairings preserve this backbone in the interior but induce predictable edge deviations: a small‑difference pedestal at low $f$ and a finite‑support roll‑off at high $f$. Analysis choices (edges; constant‑Hz vs.\ constant‑$Q$ smoothing) determine whether fitted $\hat\alpha$ flattens or steepens over finite windows \cite{donoghueParameterizingNeuralPower2020,heScalefreeBrainActivity2014}.
@@ -453,18 +537,26 @@ HAM makes direct, perturbation‑level predictions. (i) \emph{Spacing:} approxim
 \paragraph{Relation to alternative accounts.}
 HAM offers a constructive path to fractal‑like spectra by structurally favoring criticality. It is compatible with signatures of near‑critical dynamics (avalanches, scale‑invariant correlations). Combining cascade‑based from mixture, time‑constant, or E–I explanations will require perturbational tests and careful finite‑size controls—not spectral fits alone \cite{milotti1NoisePedagogical2002,bedardMacroscopicModelsLocal2009}. 
 
-HAM can be viewed as a mechanistic complement to descriptive models of $1/f$ noise (e.g., fractional Gaussian noise, self-organized criticality). Rather than assuming an ad hoc fractal process, HAM builds $1/f$ from interacting oscillatory components with clear physiological mapping (oscillators and synaptic modulation). It also aligns with the idea of the brain as a set of coupled oscillators that trade energy across scales. 
- 
+HAM can be viewed as a mechanistic complement to descriptive models of $1/f$ noise (e.g., fractional Gaussian noise, self-organized criticality). Rather than assuming an ad hoc fractal process, HAM builds $1/f$ from interacting oscillatory components with clear physiological mapping. 
+Beyond qualitative arguments for $1/f$, HAM derives two mechanistic routes—(i) a multiplicative cascade linking slope $\alpha$ to modulation depth $m$ and spacing $r$, and (ii) a mixture route from aggregating log‑spaced narrowband oscillators \cite{donoghueParameterizingNeuralPower2020}. 
+It also aligns with the idea of the brain as a set of coupled oscillators that trade energy across scales. 
 
-Prior work has noted that constant-Q filterbanks or cascading processes produce $1/f$ spectra; we place that in a neural context and further link it to predictive coding dynamics (with deep layers modulating superficial layers). The concept of nested oscillatory hierarchies has appeared in theories of cortical organization, and our results give it quantitative teeth by showing how nested envelopes can carry specific information and yield testable spectral consequences.
+
+ Prior work has noted that constant‑$Q$ (log‑spaced) filterbanks with equal power per octave imply an overall $1/f$ (“pink‑noise”) backbone, and that cascade constructions (e.g., mixtures of relaxation times or multiplicative cascades) naturally generate $1/f^\alpha$ spectra  \cite{brownCalculationConstantSpectral1991,keshner1Noise1982,duttaLowfrequencyFluctuationsSolids1981,milotti1NoisePedagogical2002,kaulakysStochasticNonlinearDifferential2004,bacryMultifractalRandomWalk2001}.
+We place that in a neural context and further link it to predictive coding dynamics (with deep layers modulating superficial layers). The concept of nested oscillatory hierarchies has appeared in theories of cortical organization; our results show how nested envelopes can carry specific information and yield testable spectral consequences.
+  In particular, Klimesch’s binary hierarchy theory posits that cross‑frequency interactions are governed by two principles—phase–to–amplitude (envelope) modulation and phase–phase (harmonic) coupling—applied to brain and body oscillations arranged on a 1:2 ladder  \cite{klimeschFrequencyArchitectureBrain2018a}. HAM retains the central role of amplitude modulation but generalizes the spacing: intermodulation sidebands impose guard‑band constraints that are satisfied by \emph{any} approximately geometric (constant‑$Q$) spacing with ratio $r\gtrsim3$ (binary is a convenient special case). 
+  %, which accords with log‑uniform tilings inferred from cochlear/constant‑$Q$ analyses \cite{brownCalculationConstantSpectral1991}. 
+  Critically, HAM predicts explicit intermodulation fingerprints (sum/difference components) in frequency‑tagging paradigms, a prediction borne out across visual cognition \cite{gordonIntermodulationComponentsVisual2019, chenIntermodulationFrequencyComponents2024}, and maps naturally onto laminar carriers vs.\ envelopes (gamma feedforward; alpha/beta feedback) \cite{vankerkoerleAlphaGammaOscillations2014,bastosDCMStudySpectral2015}.
+
+
 
 \paragraph{Outlook.}
-%By tying engineering constraints (guard bands, constant‑$Q$ designs) to hierarchical neural computation, HAM supplies both a mechanistic bridge from oscillations to computation and a practical recipe for ``spectral engineering'' in analysis and stimulation. Its predictions are sharpened by converging evidence from laminar physiology, speech tracking, and intermodulation frequency tagging, and by the growing body of work on computing with oscillators \cite{todri-sanialComputingOscillatorsTheoretical2024, effenbergerFunctionalRoleOscillatory2025}.
 Hierarchical Amplitude Modulation offers a coherent explanation linking multiple scales of neural dynamics. By requiring logarithmic frequency spacing and limited modulation depth, HAM ensures that oscillatory bands can nest without losing their identity, providing a multi-layer carrier for information. The framework elegantly accounts for the origin of 1/f spectra as a consequence of either deep cascades or aggregated log-oscillators. It connects to laminar circuit anatomy, suggesting that the cortex’s layered structure is not just a feedforward/feedback arrangement but also a modulator/demodulator pipeline for neural signals. There are many avenues to build on this work: incorporating more realistic spiking dynamics, exploring how noise and oscillations interplay in HAM (since external noise could either disrupt or be filtered by such a system), and extending to other frequency domains (e.g., could very slow $<1$~Hz fluctuations modulate high-frequency oscillations across brain-wide networks?). The HAM model provides clear predictions and a language to discuss how the brain’s rhythms might interact to encode information. As neuroscience moves toward understanding the brain as a multi-scale communications network, HAM offers a valuable piece of the puzzle, bridging theories from engineering with the biological reality of brain oscillations.
 
 
+
 \section*{Funding}
-  Giulio Ruffini, Edmundo Lopez-Sola, and Francesca Castaldo are funded by the European Commission under European Union’s Horizon 2020 research and innovation programme Grant Number 101017716 (Neurotwin) and European Research Council (ERC Synergy Galvani) under the European Union’s Horizon 2020 research and innovation program Grant Number~855109. 
+  Giulio Ruffini, Edmundo Lopez-Sola, Borja Mercadal, and Francesca Castaldo are funded by the European Commission under European Union’s Horizon 2020 research and innovation programme Grant Number 101017716 (Neurotwin) and European Research Council (ERC Synergy Galvani) under the European Union’s Horizon 2020 research and innovation program Grant Number~855109. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
@@ -477,11 +569,11 @@ Hierarchical Amplitude Modulation offers a coherent explanation linking multiple
 %%%%%%%%%%%%%%% A P P E N D I X %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\clearpage
-
+\clearpage
 \appendix
 
 \section{Mathematical details}
-
+\label{app:math}
 
   AM radio operates by encoding information in the amplitude of a high-frequency carrier wave. In this context, “information” typically refers to the audio signal we want to transmit, such as music or voice. This information is represented as a low-frequency signal, which modulates or varies the amplitude of the high-frequency carrier wave. The carrier itself oscillates at a frequency much higher than the signal, enabling it to be transmitted over long distances efficiently.
 During modulation, the carrier’s amplitude is adjusted to follow the waveform of the audio signal, embedding the desired information within the carrier’s envelope. When received, this combined signal undergoes demodulation to extract the original audio information from the carrier. Demodulation detects variations in amplitude and reconstructs the original low-frequency signal. This process highlights how AM radio relies on distinct components: a steady carrier, the modulating information signal, and demodulation to recover the original information for playback. 
@@ -512,7 +604,6 @@ While standard AM encoding relies on a single layer of modulation, where the inf
  
 
 \subsection{HAM and logarithmic spacing of modulating bands} 
-
 \label{sec:hierarchical_am}
 
 Hierarchical Amplitude Modulation (HAM) refers to a nested modulation scheme in which a high-frequency carrier is amplitude-modulated by a signal, whose amplitude in turn is modulated by another slower signal, and so on across multiple layers. In essence, information is encoded at multiple hierarchical levels of the amplitude envelope. We describe this concept step by step, analyze the resulting spectra at each stage, and show why a logarithmic (geometric) spacing of carrier and modulation frequencies naturally emerges to prevent spectral overlap, as observed in electrophysiological signals \cite{penttonenNaturalLogarithmicRelationship2003,buzsakiNeuronalOscillationsCortical2004} (see Figure~\ref{fig:logarithmic_hierarchy}). Finally, we discuss general insights into how such a structure can be demodulated and generalized.
@@ -656,41 +747,128 @@ forests) times node factors $A_u,\tilde h^{(q)}_u$.
 % ancestors. Multiplying by $c_u(t)$ shifts each narrowband component by $\pm f_u$, and
 % summing across parents preserves the signed‑sum structure. Higher powers in \eqref{eq:series}
 % produce additional \(\pm\) sums but no new coefficient set beyond $\{-1,0,1\}$.
+\paragraph{Spacing constraints: necessary and sufficient.}
+Let $f_1>f_2>\cdots>f_N>0$ and let the sideband cluster around $f_k$ be
+$\mathcal{C}_k \subset [\,f_k-S_k,\; f_k+S_k\,]$ with
+$S_k=\sum_{j>k} f_j$. We now show that $\{\mathcal{C}_k\}$ are pairwise disjoint
+iff $
+f_k \;>\; 2\sum_{j>k} f_j \quad \text{for all } k.
+$
+
+\vspace{1em}
+% In the geometric case $f_{k+1}=f_k/r$, this is equivalent to $r>3$, as we show next.
 
 
+\begin{theorem}
+\textbf{Necessary and sufficient condition for non-overlap of clusters.}
+Let $f_1>f_2>\cdots>f_N>0$ and define the half-width
+$S_k:=\sum_{j>k} f_j$, and the (one-sided, positive-frequency) sideband cluster
+\[
+\mathcal{C}_k \;:=\; [\,f_k - S_k,\; f_k + S_k\,] \subset \mathbb{R}_{\ge 0}.
+\]
+Then the family $\{\mathcal{C}_k\}_{k=1}^N$ is pairwise disjoint (strictly, i.e., no touching) if and only if
+\begin{equation}
+\label{eq:necessary_sufficient}
+\boxed{\quad f_k \;>\; 2\sum_{j>k} f_j \quad  \forall k. \quad}
+\end{equation}
+\end{theorem}
+\begin{proof}
+\emph{Support envelope.}
+By construction of the HAM spectrum, every line in the ``$k$-th cluster'' has the form
+$f = f_k + \sum_{j>k} a_j f_j$ with $a_j\in\{-1,0,1\}$. Hence the smallest/largest possible
+values in that cluster are obtained by taking all signs negative/positive, and thus
+\[
+\mathcal{C}_k \subseteq [\,f_k - S_k,\; f_k + S_k\,], \qquad S_k=\sum_{j>k} f_j.
+\]
+(For the interval proof it suffices to work with these extremal bounds.)
+
+\smallskip
+\noindent
+\emph{Sufficiency.}
+Assume \eqref{eq:necessary_sufficient}. Then $\forall k$, $f_k>2S_k$ and
+\[
+f_k - S_k \;>\; S_k \;=\; f_{k+1} + S_{k+1}
+\]
+Therefore the entire $k$-th interval lies strictly to the right of the $(k+1)$-st interval:
+$\mathcal{C}_k\cap\mathcal{C}_{k+1}=\varnothing$.
+Since $f_1>\cdots>f_N$ orders the intervals on the real line, disjointness of all adjacent pairs
+implies the whole family $\{\mathcal{C}_k\}$ is pairwise disjoint.
+
+\smallskip
+\noindent
+\emph{Necessity.}
+Conversely, suppose the clusters are pairwise disjoint. In particular,
+$\mathcal{C}_k$ and $\mathcal{C}_{k+1}$ do not intersect, so
+\[
+f_k - S_k \;>\; f_{k+1} + S_{k+1}.
+\]
+Using $S_k = f_{k+1} + S_{k+1}$ this reduces to $f_k - S_k > S_k$, i.e.
+$f_k > 2 S_k = 2\sum_{j>k} f_j$. Since this holds for each adjacent pair, it holds for all $k$,
+proving \eqref{eq:necessary_sufficient}.
+\end{proof}
+
+\paragraph{Corollary (Geometric spacing).}
+If for all $k$ (log-uniform or geometric spacing), 
+\begin{equation}
+f_{k+1}=\frac{f_k}{r} \quad\Longleftrightarrow\quad f_k=\frac{f_0}{r^k}.%\qquad r>1.
+\label{eq:geom}
+\end{equation}
+then
+\[
+S_k=\sum_{j>k} f_j \;=\; \frac{f_k}{r-1}\quad\text{(in the infinite-depth limit),}
+\]
+hence the condition $f_k>2S_k$ is equivalent to $r>3$. For finite depth $N$,
+$S_k=\frac{f_k}{r-1}\bigl(1-r^{-(N-k)}\bigr)$, so $r\gtrsim 3$ suffices in practice with slack set
+by depth, bandwidths, and modulation indices.
+
+\paragraph{Remark (Why $f_k>\sum_{j>k}f_j$ is \emph{not} enough).}
+The weaker ``super-increasing'' condition $f_k>\sum_{j>k}f_j$ guarantees that no \emph{purely
+slower} combination reaches $f_k$, but it does not exclude overlap of the \emph{clusters} because
+$\mathcal{C}_k$ extends down to $f_k-S_k$ while $\mathcal{C}_{k+1}$ extends up to $f_{k+1}+S_{k+1}=S_k$.
+When $f_k\le 2S_k$, these bounds meet or overlap. For example, with $f_1=6.25, f_2=2.5, f_3=1$
+($r=2.5$) we have $S_1=3.5$, so $\mathcal{C}_1=[2.75,\,9.75]$ and $\mathcal{C}_2=[1.5,\,3.5]$ overlap
+on $[2.75,\,3.5]$ despite $f_1>S_1$.
 
 %%%%%%
 
-\paragraph{Sufficient condition for non-overlap.} Because of Equation~\ref{eq:support}, sideband clusters centered at \(\pm f_k\) have maximum half-width \(\sum_{j>k} f_j\) (from all \(\pm\) combinations of slower terms). A \emph{sufficient} condition for these clusters to remain disjoint across all depths is the \emph{super-increasing} constraint
-\begin{equation}
-f_k \;>\; \sum_{j>k} f_j \qquad \text{for all } k.
-\label{eq:superincreasing}
-\end{equation}
-Under \eqref{eq:superincreasing}, the cluster around \(\pm f_k\) cannot touch that around \(\pm f_{k-1}\), and the top clusters at \(\pm f_0\) do not overlap each other.
+% \paragraph{Sufficient condition for non-overlap.} Because of Equation~\ref{eq:support}, sideband clusters centered at \(\pm f_k\) have maximum half-width \(\sum_{j>k} f_j\) (from all \(\pm\) combinations of slower terms). A \emph{sufficient} condition for these clusters to remain disjoint across all depths is the \emph{super-increasing} constraint
+% \begin{equation}
+% f_k \;>\; \sum_{j>k} f_j \qquad \text{for all } k.
+% \label{eq:superincreasing}
+% \end{equation}
+% Under \eqref{eq:superincreasing}, the cluster around \(\pm f_k\) cannot touch that around \(\pm f_{k-1}\), and the top clusters at \(\pm f_0\) do not overlap each other.
 
-\paragraph{Uniqueness of signed representations (stronger margin).}
-If one further requires that every element of \(\Sigma\) admit a \emph{unique} representation
-\(\sum a_i f_i\) with \(a_i\in\{-1,0,1\}\), a slightly stronger inequality suffices:
-\begin{equation}
-f_k \;>\; 2\sum_{j>k} f_j \qquad \text{for all } k,
-\label{eq:superincreasing-strong}
-\end{equation}
-since any equality \(\sum a_i f_i=\sum b_i f_i\) would lead to
-\(|d_\ell| f_\ell \le \sum_{j>\ell} |d_j| f_j \le 2\sum_{j>\ell} f_j < f_\ell\) at the largest index \(\ell\) with \(d_i=a_i-b_i\ne 0\) — a contradiction.
+% \paragraph{Uniqueness of signed representations (stronger margin).}
+% If one further requires that every element of \(\Sigma\) admit a \emph{unique} representation
+% \(\sum a_i f_i\) with \(a_i\in\{-1,0,1\}\), a slightly stronger inequality suffices:
+% \begin{equation}
+% f_k \;>\; 2\sum_{j>k} f_j \qquad \text{for all } k,
+% \label{eq:superincreasing-strong}
+% \end{equation}
+% since any equality \(\sum a_i f_i=\sum b_i f_i\) would lead to
+% \(|d_\ell| f_\ell \le \sum_{j>\ell} |d_j| f_j \le 2\sum_{j>\ell} f_j < f_\ell\) at the largest index \(\ell\) with \(d_i=a_i-b_i\ne 0\) — a contradiction.
 
-\paragraph{Geometric (log) spacing as a convenient solution.}
-A simple motif that meets \eqref{eq:superincreasing} for deep cascades is a geometric progression
-\begin{equation}
-f_{k+1}=\frac{f_k}{r} \quad\Longleftrightarrow\quad f_k=\frac{f_0}{r^k},\qquad r>1.
-\label{eq:geom}
-\end{equation}
-For an \emph{infinite} cascade,
-\[
-\sum_{j>k} f_j=\frac{f_k}{r-1},
-\]
-so \eqref{eq:superincreasing} holds whenever \(r>2\); the stronger uniqueness margin \eqref{eq:superincreasing-strong} holds for \(r>3\).
-For \emph{finite} depth \(N\), the tail sum is
-\(\sum_{j>k} f_j=\frac{f_k}{r-1}\!\bigl(1-r^{-(N-k)}\bigr)\), hence \(r\simeq 2\) is typically sufficient in practice for non-overlap, with slack set by modulation bandwidths and indices.
+% \paragraph{Geometric (log) spacing as a convenient solution.}
+% A simple motif that meets \eqref{eq:necessary_sufficient} for deep cascades is a geometric progression for $r>3$,
+% \begin{equation}
+% f_{k+1}=\frac{f_k}{r} \quad\Longleftrightarrow\quad f_k=\frac{f_0}{r^k}.%\qquad r>1.
+% \label{eq:geom}
+% \end{equation}
+% For an \emph{infinite} cascade,
+% \[
+% \sum_{j>k} f_j=\frac{f_k}{r-1}.
+% \]
+% %so \eqref{eq:superincreasing} holds whenever \(r>2\); the stronger uniqueness margin \eqref{eq:superincreasing-strong} holds for \(r>3\).
+% For \emph{finite} depth \(N\), the tail sum is
+% \(\sum_{j>k} f_j=\frac{f_k}{r-1}\!\bigl(1-r^{-(N-k)}\bigr)\), hence \(r\simeq 3\) is typically sufficient in practice for non-overlap, with slack set by modulation bandwidths and indices.
+
+% The weaker   condition $f_k>\sum_{j>k} f_j$ (equivalently $r>2$)
+% ensures that slower combinations alone cannot reach $f_k$ but does \emph{not}
+% prevent the downward spread of the $(k)$th cluster from overlapping the upward
+% spread of the $(k\!+\!1)$st. Thus, cluster non-overlap and uniqueness of signed
+% combinations $\sum a_i f_i$ with $a_i\in\{-1,0,1\}$ both require the stronger
+% margin \eqref{eq:necessary_sufficient}.
+
 
 \paragraph{Constant-\(Q\) and practical benefits.}
 Geometric spacing yields equal steps on a log-frequency axis and approximately constant fractional bandwidth across levels (constant-\(Q\)), which (i) preserves separability of sideband clusters, and (ii) enables scaleable filter/demodulator design. This mirrors classical constant-\(Q\) filterbanks and cochlear spacing \cite{brownCalculationConstantSpectral1991}, and matches the empirical near‑logarithmic arrangement of canonical neural bands \cite{penttonenNaturalLogarithmicRelationship2003,buzsaki_brain_2023}.
@@ -771,7 +949,7 @@ Natural systems that exhibit hierarchical oscillations appear to enforce the $m 
 
 In summary, \textit{overmodulation is avoided in both engineered HAM systems and natural oscillatory hierarchies} because it leads to distortion and loss of information. The condition $m < 1$ keeps each modulation layer linear and the overall signal decomposable into distinct frequency components.
 
-\subsection{Power scaling}
+\subsection{Power scaling} \label{app:powerlaw}
 
 \paragraph{Sideband spectra.} We first examine sideband spectra. With equal depths \(m_i\equiv m\in(0,1)\) and log spacing \(f_{k+1}=f_k/r\) (\(r>1\)),
 the amplitude of a component involving \(k\) modulators scales as \((m/2)^k\).
@@ -885,17 +1063,17 @@ fitted \(\alpha\) (constant pedestal added),  as observed in Fig.~\ref{fig:logsp
 The derivation of $S(f)\!\sim\!1/f$ relies only on the \emph{density} of oscillator
 centers $\rho(f)$, not on exact geometric ratios.  Geometric spacing
 ($f_{k+1}=f_k/r$) yields $\rho(f)\propto 1/f$ exactly, but any monotone sequence
-that satisfies the weaker \emph{super-increasing} condition
+that satisfies the  \emph{super-increasing} condition
 \[
-f_k>\sum_{j>k}f_j
+f_k>2 \sum_{j>k}f_j
 \]
-implies that the ratios \(r_k=f_k/f_{k+1}\) are all \(>2\), though not necessarily
+implies that the ratios \(r_k=f_k/f_{k+1}\) are all \(>3\), though not necessarily
 constant. This is because
 $$
-r_k=\frac{f_k}{f_{k+1}}> \frac{\sum_{j>k}f_j}{f_{k+1}}= 1 + \frac{\sum_{j>k+1}f_j}{f_{k+1}} >2
+r_k=\frac{f_k}{f_{k+1}}> \frac{2 \sum_{j>k}f_j}{f_{k+1}}= 1 + \frac{2 \sum_{j>k+1}f_j}{f_{k+1}} >3
 $$
 Writing $\log f_{k+1}=\log f_k-\log r_k$, the sequence of log-frequencies
-performs a random walk with mean step $-\langle\!\log r\rangle$.  By the law of
+performs a random walk with mean step $-\langle \log r\rangle$.  By the law of
 large numbers,
 \[
 \log f_k \approx \log f_0 - k\,\langle \log r\rangle,
@@ -948,6 +1126,99 @@ The assumption \(\rho(f)\propto 1/f\) parallels empirical \emph{logarithmic spac
 (delta\(\to\)gamma) \cite{penttonenNaturalLogarithmicRelationship2003} and is mathematically equivalent to a constant‑\(Q\)
 tiling (equal spacing on a log‑frequency axis) \cite{brownCalculationConstantSpectral1991}. 
 
+
+
+
+\paragraph{Logspacing simulation.} As an example of how logspacing leads to power laws, we first simulated 5,000 uncoupled harmonic oscillators sampled either uniformly or logarithmically between 0.5–200 Hz. Sampled oscillator pairs (a carrier and a modulator) were constrained such that the modulator frequency \( f_m \) was less than the carrier frequency \( f_c \). For each valid pair, we added power at \( f_m \) and \( f_c \) using a Gaussian kernel ($\sigma$ = 0.5 Hz). In a second condition, we also added power at the AM-generated sidebands \( f_c \pm f_m \). The resulting aggregate spectrum was normalized, and its slope \( \alpha \) estimated via linear regression in log-log space for \( f > 5 \) Hz. Figure \ref{fig:logspectra} provides an overview of the findings:  
+For a \textit{uniform frequency distribution,} there is no power-law scaling (\( \alpha \approx 0.08 \), flat spectrum). For 
+\textit{log-spaced frequencies without sidebands}, a clear power-law (\( \alpha \approx 0.84 \)) demonstrates that log-distributed source density and hierarchical pairing are sufficient. Finally, for 
+  \textit{log-spaced frequencies, with sidebands,} a shifted scaling is found (\( \alpha \approx 0.95 \)).
+
+\begin{figure}[t!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/Power-Law Fits: Effect of Sidebands on Spectral Slope.png}
+    \caption{ Power spectra and fitted power-law slopes for hierarchical amplitude modulation (AM) simulations with $f_m < f_c$. 
+The \textit{uniform} oscillator distribution shows no meaningful scaling ($\alpha \approx 0.08$). 
+The \textit{log-spaced} distribution yields a clear $1/f^\alpha$ structure. 
+Including AM sidebands ($f_c \pm f_m$) results in a slightly steeper slope ($\alpha \approx 0.95$) than when only the modulator and carrier frequencies are included ($\alpha \approx 0.84$), reflecting enhanced low-frequency accumulation. 
+Dashed lines indicate linear fits in log-log space over $f > 5$ Hz.}
+    \label{fig:logspectra}
+\end{figure}
+%https://colab.research.google.com/drive/1Pi7JAZTRPXa7-UuQ-hx75XIW4hYB8_qr
+
+
+
+
+ We further tested how the geometric spacing ratio between oscillator frequencies affects the emergence of the power law. Using between 5 and 100 logarithmically spaced bins to populate the frequency range (0.5–200 Hz), we found that the slope $\alpha$ increases rapidly between 5 and 20 bins (corresponding to spacing ratios $r \approx 3.31$ to $1.35$), but plateaus beyond 30 bins ($r \approx 1.22$). Increasing the number of bins beyond 30 had no meaningful impact on the spectral slope, which stabilized near $\alpha \approx 0.96$. This indicates that while logarithmic spacing is essential, only moderate resolution is needed to fully express the scaling. Finer band divisions contribute little additional structure once the modulation space is densely sampled.
+ 
+%------------------------------------------------------------
+% TEXT POLICY: Guard-bands, spacing, and non-overlap (paste once)
+% Requires: amsmath, amssymb, xcolor, tcolorbox (already in your preamble)
+%------------------------------------------------------------
+
+% --- Short, reusable macros (use these in the text to stay consistent) ---
+\newcommand{\geomspace}{\emph{geometric spacing}}
+\newcommand{\constQ}{constant-$Q$}
+\newcommand{\ratio}{\ensuremath{r}}            % spacing ratio
+\newcommand{\theoryr}{\ensuremath{r>3}}        % theory threshold for disjoint clusters
+\newcommand{\weakr}{\ensuremath{r>2}}          % weaker super-increasing threshold
+\newcommand{\empiricalr}{\ensuremath{r\approx 2\text{--}3}} % empirical observation
+\newcommand{\gbnoc}{\textsc{GBNO}}             % Guard–Band Non–Overlap (short name)
+\newcommand{\si}{\textsc{SI}}                  % Super–Increasing (short name)
+
+% Inequalities as named snippets (for equations or inline)
+\newcommand{\GBNOineq}{\ensuremath{f_k \;>\; 2\sum_{j>k} f_j \quad \forall k}}
+\newcommand{\SIineq}{\ensuremath{f_k \;>\; \sum_{j>k} f_j \quad \forall k}}
+\newcommand{\GeomDef}{\ensuremath{f_{k+1} = f_k/\ratio}}
+\newcommand{\GeomGBNO}{\ensuremath{\GeomDef\ \Rightarrow\ \ratio>3}}
+\newcommand{\GeomSI}{\ensuremath{\GeomDef\ \Rightarrow\ \ratio>2}}
+
+% --- The policy box shown once in the manuscript ---
+\begin{tcolorbox}[title={\textbf{Terminology: guard-bands, spacing, and non-overlap}},
+                  colback=gray!2, colframe=gray!40, left=1mm, right=1mm, top=1mm, bottom=1mm]
+
+\textbf{Terminology.}
+\begin{itemize}
+  \item \textbf{Non-overlap (default meaning).} Throughout the paper, \emph{“non-overlap”} means
+        \textbf{Guard–Band Non–Overlap} (\gbnoc): 
+        \[
+          \GBNOineq.
+        \]
+        Under \geomspace, i.e., \( \GeomDef \), this is equivalent to \( \theoryr \).
+  \item \textbf{Weaker condition.} The \textbf{Super–Increasing} (\si) hierarchy
+        \[
+          \SIineq
+        \]
+        (geometric case \( \GeomSI \)) prevents slower combinations from \emph{reaching} \(f_k\) but
+        \emph{does not} guarantee that the downward spread of the \(k\)th sideband cluster cannot
+        overlap the upward spread of the \((k{+}1)\)st. Hence \si\ is \emph{insufficient}
+        for strict cluster separation and uniqueness of signed combinations.
+  \item \textbf{Geometric/log spacing and \constQ.} We use \geomspace\ (\(f_{k+1}=f_k/\ratio\)) to describe
+        log‑uniform centers and a \constQ\ tiling. When we discuss theoretical guarantees
+        (non‑overlap, uniqueness, staged demodulation), we state \(\theoryr\). When we describe
+        empirical bands, we state \( \empiricalr \) and note that modest overlap can appear in
+        practice for finite depth and small modulation.
+\end{itemize}
+
+\textbf{Demodulation requirement.}
+\begin{itemize}
+  \item \emph{Sequential demodulation without interference} assumes \gbnoc\ (\(\theoryr\) under geometry),
+        so that each carrier’s sideband cluster is disjoint from adjacent clusters.
+  \item When referring to “adequate separation” in simulations or data where depth is finite
+        and modulation is moderate (\(m<1\)), we may note that \si\ (\(\weakr\)) can suffice
+        operationally, but we reserve the term \emph{“non‑overlap”} \emph{strictly} for \gbnoc.
+\end{itemize}
+
+\textbf{Summary of statements.}
+\begin{itemize}
+  \item \emph{Theory:} Cluster non‑overlap (GBNO) requires \( \GBNOineq \), i.e., \( \GeomGBNO \).
+  \item \emph{Weaker statement:} The super‑increasing hierarchy \( \SIineq \) (geometric: \( \GeomSI \))
+        prevents slower combinations from reaching \(f_k\) but does not preclude adjacent cluster overlap.
+  \item \emph{Empirical:} Canonical bands are roughly log‑spaced with \( \empiricalr \), close to but sometimes
+        below the theoretical \( \theoryr \), which explains limited yet tolerable overlap in practice.
+\end{itemize}
+
+\end{tcolorbox}
 
 % \paragraph{Simulation.} As an example, we simulated 5,000 uncoupled harmonic oscillators sampled either uniformly or logarithmically between 0.5–200 Hz. Sampled oscillator pairs (a carrier and a modulator) were constrained such that the modulator frequency \( f_m \) was less than the carrier frequency \( f_c \). For each valid pair, we added power at \( f_m \) and \( f_c \) using a Gaussian kernel ($\sigma$ = 0.5 Hz). In a second condition, we also added power at the AM-generated sidebands \( f_c \pm f_m \). The resulting aggregate spectrum was normalized, and its slope \( \alpha \) estimated via linear regression in log-log space for \( f > 5 \) Hz. Figure \ref{fig:logspectra} provides an overview of the findings:  
 % For a \textit{uniform frequency distribution,} there is no power-law scaling (\( \alpha \approx 0.08 \), flat spectrum). For 
