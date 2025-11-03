@@ -54,19 +54,22 @@
 \fancyfoot[C]{\textit{}} % Centered footer with your name
 
 % Customize hyperlink colors
+\definecolor{oceanblue}{RGB}{0,102,204}
 \hypersetup{
   colorlinks=true,
-  linkcolor=blue,
-  citecolor=blue,
-  urlcolor=magenta,
-  pdftitle={NE TN0XXX},  % PDF document title
+  linkcolor=oceanblue,
+  citecolor=oceanblue,
+  urlcolor=oceanblue,
+  pdftitle={NE TN0434},  % PDF document title
   pdfauthor={G. Ruffini},       % PDF document author
 }
 
-\title{Neural Encoding through Hierarchical Amplitude Modulation\\
-NE TN0434}
-\author{Giulio Ruffini\thanks{giulio.ruffini@neuroelectrics.com, francesca.castaldo@bcom.one} \ and Francesca Castaldo 
-\\ Neuroelectrics Barcelona, Barcelona Computational Foundation}
+\title{Neural Encoding through Hierarchical Amplitude Modulation 
+}
+\author{Giulio Ruffini\thanks{NE TN0434, giulio.ruffini@neuroelectrics.com; \href{https://giulioruffini.github.io}{https://giulioruffini.github.io} %  , %francesca.castaldo@bcom.one
+} \\ %\ and Francesca Castaldo \\
+\normalsize Neuroelectrics Barcelona
+}
 
 %\newcommand{\Comparator}{$\lceil \Delta \rceil$}
 \usepackage{xspace}
@@ -81,7 +84,7 @@ NE TN0434}
  \begin{abstract}
  
 Hierarchical encoding is a structural element of the Free Energy Principle and related information-centric accounts of brain function, but a concrete circuit-level mechanism for it remains elusive. 
-Here we examine Hierarchical Amplitude Modulation (HAM) – a computationally grounded scheme where information is encoded in the envelope of a carrier and in which slower brain rhythms multiplicatively modulate the amplitude of faster rhythms, creating a cascade of nested oscillatory envelopes. This multiplicative architecture naturally produces intermodulation frequencies (of the form \(f_c + \sum a_i f_i\)) and predicts that oscillation frequency bands should be log-spaced ($r \gtrsim $ 2--3, depending on the number of modulation layers) to avoid spectral overlap, as in constant-Q filter banks, consistent with the observed logarithmic spacing of canonical brain rhythms (with ratios $\sim$2–3). HAM's log-uniform distribution yields a $1/f$ global spectral profile and $1/f^\alpha$ sideband spectra in the broadband “aperiodic” component, with the slope determined by modulation depth $m$ and band ratio $r$. 
+Here we examine Hierarchical Amplitude Modulation (HAM) – a computationally grounded scheme where information is encoded in the envelope of a carrier and in which slower brain rhythms multiplicatively modulate the amplitude of faster rhythms, creating a cascade of nested oscillatory envelopes. This multiplicative architecture naturally produces intermodulation frequencies (of the form \(f_c + \sum a_i f_i\)) and predicts that oscillation frequency bands should be log-spaced ($r \gtrsim $ 2--3, depending on the number of modulation layers) to avoid spectral overlap, as in constant-Q filter banks, consistent with the observed logarithmic spacing of canonical brain rhythms (with ratios $\sim$2–3). HAM's log-uniform distribution yields a $1/f$ global spectral profile and $1/f^\alpha$ sideband spectra in the broadband “aperiodic” component, with the slope determined by modulation depth and band ratio. 
 We then demonstrate modulation and demodulation in the laminar neural mass model (LaNMM), where a fast excitatory–inhibitory oscillator circuit couples with a slower cortical oscillator (Janse-Rit). Through the network's intrinsic nonlinearities and cross-frequency coupling, amplitude modulation and demodulation are implemented. 
 These results provide a novel circuit-level mechanism for hierarchical predictive coding, linking theoretical principles to observed spectral features of brain activity.
 \end{abstract}
@@ -97,7 +100,8 @@ These results provide a novel circuit-level mechanism for hierarchical predictiv
  
 
 \begin{itemize}
-\item We introduce HAM: a principle for the organization of hierarchical information processing in the brain. Information is encoded through amplitude modulation, where faster rhythms are multiplicatively modulated by slower processes.  Information can thus live in signals or their envelopes (and envelopes of envelopes).
+\item We introduce HAM\footnote{The term Amateur radio (also known as “ham radio”) refers to the use of designated radio frequency bands for non-commercial purposes: self-training, experimentation, recreation, contesting, emergency communication. The term “ham” apparently comes from land-wire telegraphy (before wireless) where “ham” was used pejoratively to mean a poor or inept operator (e.g., “ham-fisted”).  Then, when amateur wireless (radio) got underway in the early 1900s, professional radiotelegraph operators applied the term “hams” to the amateur enthusiasts, deriving from that earlier usage (\href{https://en.wikipedia.org/wiki/Etymology_of_ham_radio?utm_source=chatgpt.com}{Wikipedia}).
+ For example, one 1909 citation shows the phrase: “I think he is a ham.”}: a principle for the organization of hierarchical information processing in the brain. Information is encoded through amplitude modulation, where faster rhythms are multiplicatively modulated by slower processes.  Information can thus live in signals or their envelopes (and envelopes of envelopes).
 \item The required intermodulation structure for band protection, $f_c \pm \sum a_i f_i$, finds a natural implementation in near geometric (log) spacing with a frequency ratio $r\gtrsim$ 2--3 (strong super-increasing hierarchy), yielding constant fractional bandwidths and enabling staged demodulation.
 \item In addition to geometric frequency spacing, HAM provides two routes to $1/f^\alpha$: (i) a cascade link $\alpha = 2\ln(2/m)/\ln r$; (ii) a log‑uniform mixture that yields $1/f$ in expectation with constant‑Q kernels.
 \item We provide a proof of concept modulation and demodulation implementation in NMM using the LaNMM with PING‑like fast generators as carriers and JR‑like slow generators for envelope extraction. 
@@ -342,14 +346,14 @@ where $u_s$ are the membrane perturbations, $r_0$ is half the maximum firing rat
  
 Consider such a LaNMM sigmoid node in P1 or P2 acting on the sum of a slow input $s_1(t)$ and a narrowband fast input $s_2(t)\approx A_c\cos(2\pi f_c t)$. The inputs may come from other populations or recurrently from the same population hosting the sigmoid. 
 A local Volterra/Taylor expansion around the operating point gives
-\[
+\begin{equation}
 y(t)=\sigma(s_1+s_2)\approx \kappa_0+\kappa_1[s_1(t)+s_2(t)]+\tfrac{\kappa_2}{2}[s_1(t)+s_2(t)]^2+\cdots .
-\]
+\end{equation}
 The quadratic cross‑term $\kappa_2\,s_1(t)s_2(t)$ implements amplitude modulation (AM): by the modulation (frequency‑shift) property of the Fourier transform, multiplication by $\cos(2\pi f_c t)$ translates the spectrum of the slow modulator to symmetric sidebands around $\pm f_c$ \href{https://www.amazon.com/Signals-Systems-2nd-Alan-Oppenheim/dp/0138147574}{\cite{oppenheimSignalsSystems1997}}. Under spectral separation (Bedrosian conditions), the analytic‑signal envelope of the band‑passed carrier recovers $s_1(t)$ up to scale, providing a constructive demodulator \cite{bedrosianProductTheoremHilbert1963,boashashEstimatingInterpretingInstantaneous1992}. Such multiplicative mixing yields intermodulation (IM) components at $f_a\!\pm\! f_b$, $2f_a\!\pm\! f_b$, …—the spectral fingerprints of AM/demodulation predicted by HAM—robustly observed across visual paradigms \cite{gordonIntermodulationComponentsVisual2019, chenIntermodulationFrequencyComponents2024}. 
 Functionally, AM at slow–fast interfaces is consistent with cross‑frequency coupling accounts of computation/communication \cite{canoltyFunctionalRoleCrossfrequency2010,hyafilNeuralCrossFrequencyCoupling2015} and with nonlinear mixing known from RF/microwave systems \cite{maasNonlinearMicrowaveRF2003}.
 
  
-We next examine a single LaNMM column to evaluate how it can encode (modulate), demodulate and decode a message via HAM. See Figure~\ref{fig:LaNMM_Mod_Demod} bottom for the spectra of the P1 and P2 membrane potentials (code for the example is provided at \href{https://github.com/giulioruffini/LaNMM_predictive_coding_paper}{Github}). 
+We next examine a single LaNMM column to evaluate how it can encode (modulate), demodulate and decode a message via HAM. See Figure~\ref{fig:LaNMM_Mod_Demod} bottom for the spectra of the P1 and P2 membrane potentials (code for the example is provided at \href{https://github.com/giulioruffini/TN0XXX---PAPER-It-is-AM-radio-HAM-}{Github}). 
 
 \paragraph{Modulation.} In the example in Figure~\ref{fig:LaNMM_Mod_Demod}, an external slow oscillatory input in the alpha band (mimicking a “prior” or top-down signal) was injected into the deep-layer pyramidal population P1 while the superficial layer P2 was configured to produce a sustained fast oscillation. The slow input modulates the fast oscillation in P2. In this example, the correlation between external input and P1 was $\sim$0.52, between P1 and P2 envelope $\sim$0.98, and between input and P2 envelope $\sim$0.51. 
 
@@ -386,7 +390,7 @@ Second and higher order modulation can be implemented in different ways. One is 
  
 
 \paragraph{Oscillations in the brain.}
-Oscillations are ubiquitous in neural systems and organize computation across space and time \cite{buzsaki_brain_2023, buzsakiNeuronalOscillationsCortical2004, friesRhythmsCognitionCommunication2015,chenOscillatoryControlCortical2025}. Slow rhythms (delta–alpha/beta) tend to coordinate large-scale context and top-down control, whereas faster beta/gamma rhythms carry local content and bottom-up signals; laminar and inter-areal physiology support this spectral dissociation \cite{vankerkoerleAlphaGammaOscillations2014,bastosDCMStudySpectral2015,spaakLayerspecificEntrainmentGammaband2012,bastosCanonicalMicrocircuitsPredictive2012,bastos_laminar_2018}. Cross-frequency coupling (CFC) provides the bridge between these scales, with slow phases modulating fast-band envelopes and timing \cite{canoltyFunctionalRoleCrossfrequency2010,lismanThetaGammaNeuralCode2013}. 
+Oscillations are ubiquitous in neural systems and organize computation across space and time \cite{buzsaki_brain_2023, buzsakiNeuronalOscillationsCortical2004, friesRhythmsCognitionCommunication2015,chenOscillatoryControlCortical2025}. Slow rhythms (delta–alpha/beta) tend to coordinate large-scale context and top-down control (feedback), whereas faster beta/gamma rhythms carry local content and bottom-up (feedforward) signals; laminar and inter-areal physiology support this spectral dissociation \cite{vankerkoerleAlphaGammaOscillations2014,bastosDCMStudySpectral2015,spaakLayerspecificEntrainmentGammaband2012,bastosCanonicalMicrocircuitsPredictive2012,bastos_laminar_2018}. In macaque visual cortex, for example, inter-areal Granger-causality in the gamma band is stronger in the feedforward direction (V1 → V4), while alpha-beta influences dominate in the feedback direction (V4 → V1). This aligns with anatomical projections: feedforward pathways originate in superficial layers (rich in gamma) and target layer 4 of upstream areas, whereas feedback pathways arise from deep layers (rich in alpha/beta) and target superficial layers  \cite{michalareasAlphabetaGammaRhythms2016}). The result is a frequency-based routing of information, consistent with predictive coding models: fast gamma rhythms convey unexpected input (prediction errors) up the hierarchy, and slower alpha/beta rhythms convey predictions or contextual feedback down   \cite{friesRhythmsCognitionCommunication2015}. Cross-frequency coupling (CFC) provides the bridge between these scales, with slow phases modulating fast-band envelopes and timing \cite{canoltyFunctionalRoleCrossfrequency2010,lismanThetaGammaNeuralCode2013}. 
 
 
 Across EEG/MEG/ECoG and intracranial recordings, canonical rhythm classes
@@ -437,11 +441,13 @@ A core prediction of multiplicative envelopes besides approximate geometric spac
 HAM makes direct, perturbation‑level predictions. (i) \emph{Spacing:} approximately geometric spacing should minimize cluster collisions and facilitate staged demodulation. (ii) \emph{IM scaling:} the amplitude of IM terms scales with products of modulation depths, providing a calibration handle in frequency‑tagged designs. (iii) \emph{Laminar dissociation:} superficial layers should carry fast carriers; deeper layers should track their envelopes in prediction‑heavy contexts. (iv) \emph{Perturbations:} reducing a slow rhythm’s amplitude should reduce the envelope variance of faster activity it modulates (steepening the PSD), whereas entraining a slow rhythm should increase that variance (flattening the PSD). These can be tested with closed‑loop stimulation and preregistered laminar/ECoG/MEG paradigms, coupled to LaNMM‑based parameter inference to link controlled changes in $m$ and $r$ to shifts in $\alpha$.  Constant‑$Q$ preprocessing and explicit separation of periodic vs.\ aperiodic components are essential to stabilize slope estimates and avoid spurious CFC \cite{donoghueParameterizingNeuralPower2020}. 
 
 \paragraph{Relation to alternative accounts.}
-Several mechanistic accounts have been proposed for observed frequency spacing. One line argues that approximately logarithmic spacing follows from hierarchical anatomy and finite conduction delays: excitability windows and integration times scale with the oscillation period, allowing circuits with heterogeneous axonal/synaptic delays and sizes to coordinate \cite{vereshchaginAlgorithmicStatisticsForty2017}. In this view, faster rhythms remain local while larger networks synchronize more slowly, consistent with evolutionary preservation of a hierarchy of timescales \cite{buzsakiScalingBrainSize2013}, a posterior–anterior cortical frequency gradient in humans \cite{mahjooryFrequencyGradientHuman2020}, and whole‑brain models in which distance‑dependent conduction delays generate alpha‑band phase networks \cite{williamsInfluenceInterregionalDelays2023}. Complementarily, spacing as equal steps on a log‑frequency axis has been argued to minimize mutual entrainment/cross‑talk and to reflect hierarchical network architecture—shown in reverse‑engineered networks that reproduce log‑spaced spectral peaks \cite{steinkeBrainRhythmsReveal2011}. Recent formal work refines this optimization idea: “golden rhythms” place neighboring centers at the golden ratio to maximize multiplexing (minimal interference) while preserving efficient triadic cross‑frequency interaction \cite{kramerGoldenRhythmsTheoretical2022}; related analyses propose a binary \(1{:}2\) hierarchy (and a “golden‑mean rule”) linking brain and body oscillations and predicting harmonic/nested coupling across scales.  Klimesch’s binary hierarchy theory posits that cross‑frequency interactions are governed by two principles—phase–to–amplitude (envelope) modulation and phase–phase (harmonic) coupling—applied to brain and body oscillations arranged on a 1:2 ladder \cite{klimeschFrequencyArchitectureBrain2018a}.
+Multiple mechanistic routes can yield the observed near–logarithmic spacing of brain rhythms and their cross‑frequency interactions. One line argues that approximately logarithmic spacing follows from hierarchical anatomy and finite conduction delays, whereby integration windows scale with the oscillation period, allowing circuits with heterogeneous axonal/synaptic delays and sizes to coordinate \cite{vereshchaginAlgorithmicStatisticsForty2017}. In this view, faster rhythms remain local while larger networks synchronize more slowly, consistent with evolutionary preservation of a hierarchy of timescales and size-invariant timing \cite{buzsakiScalingBrainSize2013}, and with a posterior–anterior cortical frequency gradient in humans \cite{mahjooryFrequencyGradientHuman2020}. Whole‑brain models further show that realistic, distance‑dependent delays can generate alpha‑band phase networks \cite{williamsInfluenceInterregionalDelays2023}. Complementarily, spacing as equal steps on a log‑frequency axis has been argued to minimize mutual entrainment/cross‑talk and to reflect hierarchical network architecture—shown in reverse‑engineered networks that reproduce log‑spaced spectral peaks \cite{steinkeBrainRhythmsReveal2011}. Recent formal work refines this optimization idea: “golden rhythms” place neighboring centers at the golden ratio to maximize multiplexing (minimal interference) while preserving efficient triadic cross‑frequency interaction \cite{kramerGoldenRhythmsTheoretical2022}; related analyses propose a binary \(1{:}2\) hierarchy (and a “golden‑mean rule”) linking brain and body oscillations and predicting harmonic/nested coupling across scales.  Klimesch’s binary hierarchy theory posits that cross‑frequency interactions are governed by two principles—phase–to–amplitude (envelope) modulation and phase–phase (harmonic) coupling—applied to brain and body oscillations arranged on a 1:2 ladder \cite{klimeschFrequencyArchitectureBrain2018a}.
 
 A parallel mechanistic route is self‑organization: with activity‑dependent plasticity, neural populations can split into a few frequency clusters whose slower envelopes modulate faster components, offering a circuit basis for band “quantization” \cite{rohrFrequencyClusterFormation2019,socolovskyRobustRhythmogenesisSpiketimingdependent2021,luzOscillationsSpikeTimingDependent2016}. Methodologically, the apparent discreteness strengthens after modeling out the aperiodic \(1/f\) background and analyzing burst‑wise dynamics—revealing approximately constant‑\(Q\) spacing of putative peaks \cite{donoghueParameterizingNeuralPower2020}—and recent state‑space reconstructions report a low‑dimensional geometric “core” that organizes band interactions \cite{pourdavoodEEGSpectralAttractors2024}). '
 
-HAM differs from the above by focusing on the consequences of hiearchical amplitude modulation for information encoding. It does not derive the spacing primarily from biophysical delays or carrier interference‑avoidance; instead, it treats the band hierarchy as a normative, codebook‑like quantization emerging from the model’s objective (clean, scale‑invariant multiplexing under explicit constraints), yielding a specific multiplicative scheme and falsifiable predictions about when/where centers shift while preserving constant‑\(Q\) structure. Our results show how nested envelopes can carry specific information and yield testable spectral consequences.
+Additionally, a large literature treats slow phases modulating fast-band amplitudes (PAC) and related CFC as a control mechanism that routes information and coordinates computations across scales \cite{canoltyFunctionalRoleCrossfrequency2010}. Laminar and inter‑areal data support a spectral dissociation of feedforward vs. feedback: gamma/theta dominate feedforward, alpha/beta feedback \cite{vankerkoerleAlphaGammaOscillations2014, bastosVisualAreasExert2015}; large‑scale/laminar modeling reproduces these asymmetries \cite{mejiasFeedforwardFeedbackFrequencydependent2016}, and a recent laminar atlas shows ubiquitous deep (alpha‑beta)/superficial (gamma) motifs across primates \cite{mendoza-hallidayUbiquitousSpectrolaminarMotif2024}.
+
+HAM differs from the above by proposing a compositional information-encoding scheme and by focusing on its consequences for oscillatory spectral structure. It does not derive the spacing primarily from biophysical delays or carrier interference‑avoidance; instead, it treats the band hierarchy as a normative, codebook‑like quantization that supports clean, scale‑invariant multiplexing under explicit constraints, with specific multiplicative schemes and falsifiable predictions about when/where centers can shift while preserving constant‑\(Q\) structure. Our results show how nested envelopes can carry specific information and yield testable spectral consequences.
  HAM starts from the central role of amplitude modulation but generalizes the spacing: intermodulation sidebands impose guard‑band constraints that are satisfied by \emph{any} approximately geometric (constant‑$Q$) spacing with ratio $r\gtrsim$ 2-3 . 
 %Critically, HAM predicts explicit intermodulation fingerprints (sum/difference components) in frequency‑tagging paradigms, a prediction borne out across visual cognition \cite{gordonIntermodulationComponentsVisual2019, chenIntermodulationFrequencyComponents2024}, and maps naturally onto laminar carriers vs.\ envelopes (gamma feedforward; alpha/beta feedback) \cite{vankerkoerleAlphaGammaOscillations2014,bastosDCMStudySpectral2015}.
 It also offers a constructive path to fractal‑like spectra by structurally favoring criticality. It is compatible with signatures of near‑critical dynamics (avalanches, scale‑invariant correlations). Combining HAM, time‑constant, or E–I explanations will require perturbational tests and careful finite‑size controls—not spectral fits alone \cite{milotti1NoisePedagogical2002,bedardMacroscopicModelsLocal2009}. 
@@ -451,12 +457,12 @@ We place that in a neural context and further link it to predictive coding dynam
 Beyond qualitative arguments for $1/f$, HAM derives two mechanistic routes—(i) a multiplicative cascade linking slope $\alpha$ to modulation depth $m$ and spacing $r$, and (ii) a mixture route from aggregating log‑spaced narrowband oscillators \cite{donoghueParameterizingNeuralPower2020}. 
 
 \noindent\textbf{Predictive coding link.}
-HAM provides a hierarchical backbone for predictive coding. As prposed in Ruffini et al. (2025) \cite{Ruffini2025Comparator}, in hierarchical predictive coding, deep populations provide slow predictions $p_k(t)$ while superficial populations carry content in their envelopes. Error evaluation at level $k$ is a signed \emph{unmodulation}:
+HAM provides a hierarchical information encoding backbone for predictive coding. As proposed in Ruffini et al. (2025) \cite{Ruffini2025Comparator}, in hierarchical predictive coding, deep populations provide slow predictions $p_k(t)$ while superficial populations carry content in their envelopes. Error evaluation at level $k$ is essentially carried out by a signed \emph{demodulation}:
 \begin{equation}
-\varepsilon_k(t)\;=\;\underbrace{\mathcal U_{f_k}\!\bigl[x(t)\bigr]}_{\text{estimated envelope at }k}\;-\;p_k(t),
+\varepsilon_k(t)\;=\;\underbrace{\mathcal D_{f_k}\!\bigl[x(t)\bigr]}_{\text{estimated envelope at }k}\;-\;p_k(t),
 \label{eq:pc-error}
 \end{equation}
-where $x(t)$ is the bottom-up signal, $p_k(t)$ the prediction for the $k$-th layer, and $\mathcal U$ stands for unmodulation at frequency $f_k$ --- i.e.,\ envelope extraction followed by subtraction (the “Comparator”). Laminar data support this mapping: gamma‑band activity dominates feedforward channels and
+where $x(t)$ is the bottom-up signal, $p_k(t)$ the prediction for the $k$-th layer, and $\mathcal D$ stands for demodulation at frequency $f_k$ --- i.e.,\ envelope extraction followed by subtraction (the “Comparator”). Laminar data support this mapping: gamma‑band activity dominates feedforward channels and
 alpha/beta envelopes dominate feedback, consistent with deep‑layer envelope readout
 and staged demodulation across the hierarchy
 \cite{vankerkoerleAlphaGammaOscillations2014,bastosDCMStudySpectral2015}.
@@ -467,9 +473,16 @@ should proceed fast$\rightarrow$slow (or in parallel constant‑$Q$ channels) to
 \paragraph{Outlook.}
 Hierarchical Amplitude Modulation offers a coherent explanation linking multiple scales of neural dynamics. By requiring logarithmic frequency spacing and limited modulation depth, HAM ensures that oscillatory bands can nest without losing their identity, providing a multi-layer carrier for information. The framework elegantly accounts for the origin of 1/f spectra as a consequence of either deep cascades or aggregated log-oscillators. It connects to laminar circuit anatomy, suggesting that the cortex’s layered structure is not just a feedforward/feedback arrangement but also a modulation pipeline for neural signals. There are many avenues to build on this work: incorporating more realistic spiking dynamics, exploring how noise and oscillations interplay in HAM (since external noise could either disrupt or be filtered by such a system), and extending to other frequency domains (e.g., could very slow $<1$~Hz fluctuations modulate high-frequency oscillations across brain-wide networks?). The HAM model provides clear predictions and a language to discuss how the brain’s rhythms might interact to encode information. As neuroscience moves toward understanding the brain as a multi-scale communications network, HAM may offer a valuable piece of the puzzle, bridging theories from engineering with the biological reality of brain oscillations.
 
-\section*{Funding}
- Giulio Ruffini  and Francesca Castaldo are funded by the European Commission under European Union’s Horizon 2020 research and innovation programme Grant Number 101017716 (Neurotwin) and European Research Council (ERC Synergy Galvani) under the European Union’s Horizon 2020 research and innovation program Grant Number~855109. 
 
+\section*{Acknowledgements}
+The author thanks Francesca Castaldo for helpful discussions and reviewing the manuscript.  
+
+\section*{Funding}
+ Giulio Ruffini  is %and Francesca Castaldo are 
+ funded by the European Commission under European Union’s Horizon 2020 research and innovation programme Grant Number 101017716 (Neurotwin) and European Research Council (ERC Synergy Galvani) under the European Union’s Horizon 2020 research and innovation program Grant Number~855109. 
+
+\section*{Code availability}
+Code for simulations and figures is available at \href{https://github.com/giulioruffini/TN0XXX---PAPER-It-is-AM-radio-HAM-}{Github}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 
@@ -484,7 +497,7 @@ Hierarchical Amplitude Modulation offers a coherent explanation linking multiple
 \clearpage
 \appendix
 
-\section{Mathematical details}
+\section{Appendix: Mathematical details}
 \label{app:math}
 
  AM radio operates by encoding information in the amplitude of a high-frequency carrier wave. In this context, “information” typically refers to the audio signal we want to transmit, such as music or voice. This information is represented as a low-frequency signal, which modulates or varies the amplitude of the high-frequency carrier wave. The carrier itself oscillates at a frequency much higher than the signal, enabling it to be transmitted over long distances efficiently.
